@@ -1,3 +1,5 @@
+using WAV
+
 DatasetPath = "data/etc/txt.done.data"
 WavPath = "data/orig/"
 
@@ -11,5 +13,3 @@ dataset = sort(collect(dataset))
 for (k,v) in dataset
 	println("$k.wav ($v)")
 end
-
-
