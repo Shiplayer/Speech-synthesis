@@ -1,4 +1,4 @@
 using PyPlot
 
-plot([1,2], [1,2], "r")
+hist([1 2 3 4])
 show()
