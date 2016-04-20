@@ -16,3 +16,5 @@ plot(x, "r")
 show()
 plot(y,"r")
 show()
+
+wavplay(x)
