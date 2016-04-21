@@ -6,3 +6,4 @@
 - [Matlib FFT](http://www.mathworks.com/help/matlab/ref/fft.html)
 - [Распознавание речи](https://habrahabr.ru/post/226143/)
 - [Структура WAV файла](http://audiocoding.ru/article/2008/05/22/wav-file-structure.html)
+- [Мел-кепстральные коэффициенты](https://habrahabr.ru/post/140828/)
