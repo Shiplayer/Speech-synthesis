@@ -1,5 +1,40 @@
 using PyPlot
 using WAV
+using MFCC
+
+function splitArrayq(x)
+	new_channel = Array{Float64, 1}()
+	new_other_channel = Array{Float64, 1}()
+	points = Array{Int64, 1}()
+	flag = 1
+	count = 1
+	for i = 1:size(x, 1)
+		if(abs(x[i, 1]) > 0.05)
+			if(flag == 1)
+				push!(points, size(new_channel)[1])
+				flag = 0
+				count = 0
+			end
+			push!(new_channel, x[i, 1])
+			push!(new_other_channel, x[i, 2])
+		elseif(count <= 10)
+			count = count + 1
+		elseif(count > 10)
+			count = count + 1
+			if(flag == 0)
+				push!(points, size(new_channel)[1])
+				flag = 1
+			end
+		end	
+	end
+	print(size(new_channel, 1), " ", size(new_other_channel, 1), "\n")
+	origin = Array{Float64, 2}(size(new_channel)[1], size(new_other_channel)[1])
+	for i = 1:size(origin, 1)
+		origin[i, 1] = new_channel[i]
+		origin[i, 2] = new_other_channel[i]
+	end
+	return origin, points
+end
 
 function transformToHistogram(x_plot, y_plot)
 	x = Array{Float64, 2}(size(x_plot, 1) * 3, size(x_plot, 2) * 3)
@@ -28,7 +63,18 @@ end
 
 WavPath = "data/orig/arctic_a0001.wav"
 
-coordinates, fs = wavread(WavPath, 60000)
+
+coordinates, fs = wavread(WavPath)
+x, points = splitArrayq(coordinates)
+x_words = Array{Float64, 2}()
+if(size(points)[1] > 2)
+	for i = points[1]:points[2]
+		x_words[i] = x[i]
+	end
+end
+
+plot(x_words, "r")
+#=
 #x, y = Array{Float32,1}(), Array{Float32,1}()
 print(typeof(coordinates))
 print(size(coordinates,1), " ", size(coordinates,2), "\n")
@@ -43,3 +89,12 @@ print(size(X, 1), " ", size(X, 2), "\n")
 x, y = transformToHistogram(X, coordinates)
 plot(abs(x), abs(y * 100), "r")
 show()
+
+function f(m)
+	
+end
+
+function B(b)
+	return 700*(exp(b/1125) - 1)
+end
+=#
