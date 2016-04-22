@@ -7,3 +7,4 @@
 - [Распознавание речи](https://habrahabr.ru/post/226143/)
 - [Структура WAV файла](http://audiocoding.ru/article/2008/05/22/wav-file-structure.html)
 - [Мел-кепстральные коэффициенты](https://habrahabr.ru/post/140828/)
+- [MFCC Tutorial](http://www.practicalcryptography.com/miscellaneous/machine-learning/guide-mel-frequency-cepstral-coefficients-mfccs/)
