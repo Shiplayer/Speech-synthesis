@@ -7,7 +7,7 @@ end
 #numb = [i for i=1:10]
 #var = ccall((:test, "./cDir/test.so"), Ptr{Cint}, (Ptr{Cint}, Cint), numb, 10)
 #numb = convert(Array{Int32, 1}, numb)
-var = ccall((:test, "./cDir/test.so"), Ptr{Cint}, (Int32, Ptr{Ptr{Cint}}), 10, pointer(numb, 1))
+var = ccall((:test, "./cDir/test.so"), Ptr{Cint}, (Int32, Array{Cint, 2}), 10, numb, 1)
 print(typeof(var),"\n")
 for i = 1:10
 	print(unsafe_load(var, i), " ")
