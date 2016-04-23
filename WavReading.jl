@@ -35,7 +35,7 @@ function splitArrayq(x)
 			end
 		end	
 	end
-	print(size(new_channel, 1), " ", size(new_other_channel, 1), "\n")
+	print("size: ", size(new_channel, 1), " ", size(new_other_channel, 1), "\n")
 	origin = Array{Float64, 2}(size(new_channel)[1], 2)
 	for i = 1:size(origin, 1)
 		origin[i, 1] = new_channel[i]
@@ -74,23 +74,25 @@ WavPath = "data/orig/arctic_a0001.wav"
 
 coordinates, fs = wavread(WavPath, 14000)
 x, points = splitArrayq(coordinates)
-print(points[1], " ", points[2], "\n")
-print(length(x), "\n")
+print(x, "\n")
+print("points: ", points[1], " ", points[2], "\n")
+print("length(x): ",length(x), "\n")
 x_words = Array{Float64, 1}()
 x_words_other_channel = Array{Float64, 1}()
-if(size(points)[1] > 2)
+if(size(points)[1] >= 2)
 	for i = points[1]:points[2]
 		push!(x_words, x[i, 1])
 		push!(x_words_other_channel, x[i, 2])
 #		x_words[i, 1], x_words[i, 2] = x[i, 1], x[i, 2]
 	end
 end
+print("length: ",length(x_words), "\n")
 words = Array{Float64, 2}(length(x_words), 2)
 for i=1:length(x_words)
 	words[i, 1] = x_words[i]
 	words[i, 2] = x_words_other_channel[i]
 end
-
+print("print: ", size(words, 1), " ", size(words, 2), "\n")
 plot(words, "r")
 show()
 wavplay(words, fs/2)
