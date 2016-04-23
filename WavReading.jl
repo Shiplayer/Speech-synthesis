@@ -9,17 +9,21 @@ function splitArrayq(x)
 	flag = 1
 	count = 1
 	for i = 1:size(x, 1)
-		if(abs(x[i, 1]) > 0.05)
+		if(abs(x[i, 1]) > 0.04)
 			if(flag == 1)
-				push!(points, size(new_channel)[1])
+				push!(points, size(new_channel)[1] + 1)
 				flag = 0
 				count = 0
 			end
 			push!(new_channel, x[i, 1])
 			push!(new_other_channel, x[i, 2])
-		elseif(count <= 10)
+		elseif(count <= 500)
 			count = count + 1
-		elseif(count > 10)
+			if(flag == 0)
+				push!(new_channel, x[i, 1])
+				push!(new_other_channel, x[i, 2])
+			end
+		elseif(count > 500)
 			count = count + 1
 			if(flag == 0)
 				push!(points, size(new_channel)[1])
@@ -28,7 +32,7 @@ function splitArrayq(x)
 		end	
 	end
 	print(size(new_channel, 1), " ", size(new_other_channel, 1), "\n")
-	origin = Array{Float64, 2}(size(new_channel)[1], size(new_other_channel)[1])
+	origin = Array{Float64, 2}(size(new_channel)[1], 2)
 	for i = 1:size(origin, 1)
 		origin[i, 1] = new_channel[i]
 		origin[i, 2] = new_other_channel[i]
@@ -64,16 +68,28 @@ end
 WavPath = "data/orig/arctic_a0001.wav"
 
 
-coordinates, fs = wavread(WavPath)
+coordinates, fs = wavread(WavPath, 14000)
 x, points = splitArrayq(coordinates)
-x_words = Array{Float64, 2}()
+print(points[1], " ", points[2], "\n")
+print(length(x), "\n")
+x_words = Array{Float64, 1}()
+x_words_other_channel = Array{Float64, 1}()
 if(size(points)[1] > 2)
 	for i = points[1]:points[2]
-		x_words[i] = x[i]
+		push!(x_words, x[i, 1])
+		push!(x_words_other_channel, x[i, 2])
+#		x_words[i, 1], x_words[i, 2] = x[i, 1], x[i, 2]
 	end
 end
+words = Array{Float64, 2}(length(x_words), 2)
+for i=1:length(x_words)
+	words[i, 1] = x_words[i]
+	words[i, 2] = x_words_other_channel[i]
+end
 
-plot(x_words, "r")
+plot(coordinates, "r")
+show()
+#wavplay(words, fs/2)
 #=
 #x, y = Array{Float32,1}(), Array{Float32,1}()
 print(typeof(coordinates))
