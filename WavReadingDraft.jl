@@ -13,10 +13,10 @@ X =abs(fft(y))
 plot(X, abs(y*100), ".")
 show()
 #=for i=(length(X) - 20000):length(X)
-	X[i] = 0
+    X[i] = 0
 end
 for i=1:20000
-	X[i] = 0
+    X[i] = 0
 end
 =#
 
@@ -26,10 +26,10 @@ x = [y[(i-1) * 2 + 1] for i=1:(div(length(y),2))]
 y_new = [y[(i - 1) * 2 + 2] for i=1:(div(length(y),2))]
 X = Array{Float64}(1,length(y))
 for i=1:length(y)
-	X[i] = 0
-	for j=0:(length(y) - 1)
-		X[i] += abs(y[j + 1] * e^(- 2 * pi * im * j * (i - 1) / length(y)))
-	end 
+    X[i] = 0
+    for j=0:(length(y) - 1)
+        X[i] += abs(y[j + 1] * e^(- 2 * pi * im * j * (i - 1) / length(y)))
+    end 
 end
 m = 
 print(string(m, " ", length(y), "\n"))
@@ -55,12 +55,12 @@ show()
 #show()
 X = abs(fft(y))
 #for i=1:length(X)
-#	X[i]=X[i] * (0.54 - 0.46*cos(2* pi * i/(length(X) - 1)))
+#   X[i]=X[i] * (0.54 - 0.46*cos(2* pi * i/(length(X) - 1)))
 #end
 for i=1:length(X)
-	if(X[i] > 100) 
-		print(i, " index ", X[i], "\n")
-	end
+    if(X[i] > 100) 
+        print(i, " index ", X[i], "\n")
+    end
 end
 #plot(abs(X), y,"r")
 #show()
