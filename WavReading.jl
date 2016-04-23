@@ -8,7 +8,8 @@ function splitArrayq(x)
 	points = Array{Int64, 1}()
 	flag = 1
 	count = 1
-	for i = 1:size(x, 1)
+	flag_1 = 0
+	for i = 2:size(x, 1)
 		if(abs(x[i, 1]) > 0.04)
 			if(flag == 1)
 				push!(points, size(new_channel)[1] + 1)
@@ -18,10 +19,13 @@ function splitArrayq(x)
 			push!(new_channel, x[i, 1])
 			push!(new_other_channel, x[i, 2])
 		elseif(count <= 500)
-			count = count + 1
-			if(flag == 0)
-				push!(new_channel, x[i, 1])
-				push!(new_other_channel, x[i, 2])
+			if(abs(x[i-1, 1]) < 0.04 && flag_1 == 1)
+				count = count + 1
+			elseif(flag_1 == 1 && abs(x[i - 1, 1]) > 0.04)
+				count = 0
+				flag_1 = 0
+			else
+				flag_1 = 1
 			end
 		elseif(count > 500)
 			count = count + 1
@@ -87,9 +91,9 @@ for i=1:length(x_words)
 	words[i, 2] = x_words_other_channel[i]
 end
 
-plot(coordinates, "r")
+plot(words, "r")
 show()
-#wavplay(words, fs/2)
+wavplay(words, fs/2)
 #=
 #x, y = Array{Float32,1}(), Array{Float32,1}()
 print(typeof(coordinates))
