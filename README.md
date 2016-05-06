@@ -11,3 +11,9 @@
 - Другие ссылки:
   * [Структура WAV файла](http://audiocoding.ru/article/2008/05/22/wav-file-structure.html)
   * [MFCC Tutorial](http://www.practicalcryptography.com/miscellaneous/machine-learning/guide-mel-frequency-cepstral-coefficients-mfccs/)
+- Возможно, новый [дата сет](http://www.manythings.org/audio/sentences/)
+
+Проблемы, с которыми мы столкнулись:
+* Странное воспроизведение аудиозаписи из дата сета (странный кусок аудиозаписи в конце)
+* Определение слов и предлогов в аудиозаписи
+* Искожается аудиозапись при копировании и воспроизведении этого куска (при копировании, изменение данных не было обнаружено)
