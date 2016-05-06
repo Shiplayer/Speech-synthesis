@@ -10,7 +10,7 @@ function splitArrayq(x)
     count = 1
     flag_1 = 0
     for i = 2:size(x, 1)
-        if(abs(x[i, 1]) > 0.04)
+        if(abs(x[i, 1]) > 0.05)
             if(flag == 1)
                 push!(points, size(new_channel)[1] + 1)
                 flag = 0
@@ -47,7 +47,7 @@ end
 function transformToHistogram(x_plot, y_plot)
     x = Array{Float64, 2}(size(x_plot, 1) * 3, size(x_plot, 2) * 3)
     y = Array{Float64, 2}(size(y_plot, 1) * 3, size(y_plot, 2) * 3)
-    print(x[1, 1])
+#    print(x[1, 1])
     for i = 1:size(x_plot, 1)
         if(abs(x_plot[i, 1]) < 1000)
             x[i * 3 - 1, 1] = abs(x_plot[i, 1])
@@ -70,32 +70,39 @@ function transformToHistogram(x_plot, y_plot)
 end
 
 WavPath = "data/orig/arctic_a0001.wav"
+#WavPath = "test\ audio\ words/433492.wav"
 
 
-coordinates, fs = wavread(WavPath, 14000)
+coordinates, fs = wavread(WavPath)
 x, points = splitArrayq(coordinates)
-print(x, "\n")
+#print(x, "\n")
 print("points: ", points[1], " ", points[2], "\n")
 print("length(x): ",length(x), "\n")
-x_words = Array{Float64, 1}()
-x_words_other_channel = Array{Float64, 1}()
 if(size(points)[1] >= 2)
-    for i = points[1]:points[2]
-        push!(x_words, x[i, 1])
-        push!(x_words_other_channel, x[i, 2])
-#       x_words[i, 1], x_words[i, 2] = x[i, 1], x[i, 2]
+    for i = 1:div(length(points), 2)
+        x_words = Array{Float64, 1}()
+        x_words_other_channel = Array{Float64, 1}()
+        for i = points[i]:points[i + 1]
+            push!(x_words, x[i, 1])
+            push!(x_words_other_channel, x[i, 2])
+#          x_words[i, 1], x_words[i, 2] = x[i, 1], x[i, 2]
+        end
+    	print("length: ",length(x_words), "\n")
+	    words = Array{Float64, 2}(length(x_words), 2)
+    	print(points,"\n")
+	    for i=1:length(x_words)
+	        words[i, 1] = x_words[i]
+    	    words[i, 2] = x_words_other_channel[i]
+	    end
+    	print("print: ", size(words, 1), " ", size(words, 2), "\n")
+    	plot(words, "r")
+    	show()
+    	wavplay(words, fs/2)
     end
 end
-print("length: ",length(x_words), "\n")
-words = Array{Float64, 2}(length(x_words), 2)
-for i=1:length(x_words)
-    words[i, 1] = x_words[i]
-    words[i, 2] = x_words_other_channel[i]
-end
-print("print: ", size(words, 1), " ", size(words, 2), "\n")
-plot(words, "r")
+plot(coordinates, "r")
 show()
-wavplay(words, fs/2)
+wavplay(coordinates, fs / 2)
 #=
 #x, y = Array{Float32,1}(), Array{Float32,1}()
 print(typeof(coordinates))
