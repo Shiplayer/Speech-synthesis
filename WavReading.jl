@@ -3,10 +3,15 @@ using WAV
 using MFCC
 
 function splitArrayq(x, channel = 2)
-    noise = 100
+    noise = 0
     for i=1:length(x)
-        noise = x[i] * log(2, x[i]) + sum
+        noise = abs(abs(x[i, 1]) * log(2, abs(x[i, 1]))) + noise
+        if(noise != NaN)
+            print(noise, "\n")
+        end
+        print(abs(abs(x[i, 1]) * log(2, abs(x[i, 1]))), "\n")
     end
+    print(noise, "\n")
     new_channel = Array{Float64, 1}()
     if(channel == 2)
         new_other_channel = Array{Float64, 1}()
@@ -91,7 +96,7 @@ nchannel = convert(Int64, format[:fmt].nchannels)
 x, points = splitArrayq(coordinates, nchannel)
 
 #print(x, "\n")
-print("points: ", points[1], " ", points[2], "\n")
+#print("points: ", points[1], " ", points[2], "\n")
 print("length(x): ",length(x), "\n")
 print(points, "\n")
 if(size(points)[1] >= 2)
