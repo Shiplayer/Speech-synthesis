@@ -4,6 +4,9 @@ using MFCC
 
 function splitArrayq(x, channel = 2)
     noise = 100
+    for i=1:length(x)
+        noise = x[i] * log(2, x[i]) + sum
+    end
     new_channel = Array{Float64, 1}()
     if(channel == 2)
         new_other_channel = Array{Float64, 1}()
