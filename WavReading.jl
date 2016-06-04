@@ -6,13 +6,19 @@ function splitArrayq(x, channels = 2)
     noise = 0
     for i=1:size(x, 1)
         if(x[i, 1] != 0)
-            noise = abs(x[i, 1]) * log(2, abs(x[i, 1])) + noise
+            n=0
+            for j=1:size(x, 1)
+                if(x[i,1] == x[j,1])
+                    n = n + 1
+                end
+            end
+            noise = abs(x[i, 1]/n) * log(2, abs(x[i, 1]/n)) + noise
         end
 #        print(abs(abs(x[i, 1]) * log(2, abs(x[i, 1]))), "\n")
     end
+    noise = abs(noise / size(x,1))
     print(noise, "\n")
     new_channel = Array{Float64, 1}()
-    noise = 300
     if(channels == 2)
 
         new_other_channel = Array{Float64, 1}()
@@ -20,9 +26,10 @@ function splitArrayq(x, channels = 2)
     points = Array{Int64, 1}()
     flag = 1
     count = 1
+    counts = 500
     flag_1 = 0
     for i = 2:size(x, 1)
-        if(abs(x[i, 1]) > 0.02)
+        if(abs(x[i, 1]) > noise)
             if(flag == 1)
                 push!(points, size(new_channel)[1] + 1)
                 flag = 0
@@ -32,7 +39,7 @@ function splitArrayq(x, channels = 2)
             if(channels == 2)
                 push!(new_other_channel, x[i, 2])
             end
-        elseif(count <= noise)
+        elseif(count <= counts)
             if(abs(x[i-1, 1]) < 0.02 && flag_1 == 1)
                 count = count + 1
             elseif(flag_1 == 1 && abs(x[i - 1, 1]) > 0.02)
@@ -41,7 +48,7 @@ function splitArrayq(x, channels = 2)
             else
                 flag_1 = 1
             end
-        elseif(count > noise)
+        elseif(count > counts)
             count = count + 1
             if(flag == 0)
                 push!(points, size(new_channel)[1])
@@ -138,8 +145,8 @@ function getWord(beginPoint, endPoint, channels = 2)
 end
 
 #569619
-#WavPath = "data/orig/arctic_a0001.wav"
-WavPath = "test\ audio\ words/433492.wav"
+WavPath = "data/orig/arctic_a0001.wav"
+#WavPath = "test\ audio\ words/433492.wav"
 
 x, fs, t, format = wavread(WavPath, 1000)
 coordinates, fs = wavread(WavPath)
