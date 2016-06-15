@@ -141,9 +141,9 @@ for j=2:length(x)
     end
 end
 println(count, " ", count_sound, " ", pns);
-#=plot(x, "r")
+plot(x, "r")
 title(files[i])
-plt[:show]()=#
+plt[:show]()
 if(length(pns) > 4)
     println(files[i])
     break;
