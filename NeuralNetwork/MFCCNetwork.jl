@@ -4,7 +4,7 @@ using PyPlot
 using MFCC;
 using MFCCNeuron;
 
-function splitArray(x, channels = 2)
+#=function splitArray(x, channels = 2)
     noise = 0
     for i=1:size(x, 1)
         if(x[i, 1] != 0)
@@ -72,7 +72,7 @@ function splitArray(x, channels = 2)
     else
         return new_channel, points
     end
-end
+end =#
 
 AUDIO_DIR = "../test audio words/wav/";
 dir = readdir(AUDIO_DIR)
@@ -85,10 +85,14 @@ end
 
 AUDIO = "002 aunt.wav";
 
+#memory = open("Memoty/Str2MFCC.txt", "w")
+
+
 for i=1:length(dir)
 #coordinates, fs = wavread(string(AUDIO_DIR, dir[i]), 30000);
-x, fs = wavread(string(AUDIO_DIR, dir[i]))
-x_word, fs = wavread(string(AUDIO_DIR, dir[i]), 28000)
+println(files[i])
+x, fs = wavread(string(AUDIO_DIR, files[i], ".wav"))
+x_word, fs = wavread(string(AUDIO_DIR, files[i], ".wav"), 28000)
 
 x_new_word = Array{Float64, 1}()
 for j=27000:length(x_word)
