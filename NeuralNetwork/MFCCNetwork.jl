@@ -74,6 +74,38 @@ using MFCCNeuron;
     end
 end =#
 
+function getWordPoints(x::Array{Float64, 2})
+    pns = Array{Int64, 1}();
+    flag = 0;
+    lim = 0.0002
+    count_sound = 0;
+    count = 0;
+    for j=2:length(x)
+        buf = abs(abs(x[j-1]) - abs(x[j]))
+        if(buf > lim)
+            count_sound = count_sound + 1
+            if(flag == 0)
+                push!(pns, j)
+            end
+            flag = 1;
+            count = 0
+        elseif(buf <= lim && count < 500)
+            count = count + 1;
+        elseif(count >= 500)
+            if(flag == 1)
+                push!(pns, j - 400);
+                flag = 0;
+                count_sound = 0;
+            end
+        end
+    end
+    return pns
+end
+
+function init()
+
+end
+
 AUDIO_DIR = "../test audio words/wav/";
 dir = readdir(AUDIO_DIR)
 files = Dict{Int64, ASCIIString}()
@@ -83,74 +115,60 @@ for i=1:length(dir)
     end
 end
 
+MEMORYPATH = "Memory/Str2MFCC.txt"
 AUDIO = "002 aunt.wav";
+memory = open(MEMORYPATH, "w")
+rewrite = false;
+for k in ARGS
+    if(k == "-r")
+        rewrite = true;
+    end
+end
 
-memory = open("Memory/Str2MFCC.txt", "w")
-
+if(!rewrite && !ispath(MEMORYPATH))
+    rewrite = true;
+end
 
 for i=1:length(files)
 #for i=1:2
-#coordinates, fs = wavread(string(AUDIO_DIR, dir[i]), 30000);
-println(files[i])
-x, fs = wavread(string(AUDIO_DIR, files[i], ".wav"))
-x_word, fs = wavread(string(AUDIO_DIR, files[i], ".wav"), 28000)
-
-x_new_word = Array{Float64, 1}()
-for j=27000:length(x_word)
-    push!(x_new_word, x_word[j])
-end
-x_word = x_new_word
-min = 100.0
-avr = 0.0;
-max = 0.0;
-
-for j=2:length(x_word)
-    buf = abs(abs(x_word[j-1]) - abs(x_word[j]))
-    if(buf > max)
-        max = buf
-    end
-    if(buf < min && buf != 0.0)
-        min = buf
-    end
-    avr = avr + buf;
-end
-println(avr/length(x_word))
-println(max)
-println(min)
-pns = Array{Int64, 1}();
-flag = 0;
-lim = 0.0002
-count_sound = 0;
-count = 0;
-for j=2:length(x)
-    buf = abs(abs(x[j-1]) - abs(x[j]))
-    if(buf > lim)
-        count_sound = count_sound + 1
-        if(flag == 0)
-            push!(pns, j)
-        end
-        flag = 1;
-        count = 0
-    elseif(buf <= lim && count < 500)
-        count = count + 1;
-    elseif(count >= 500)
-        if(flag == 1)
-            push!(pns, j - 400);
-            flag = 0;
-            count_sound = 0;
-        end
-    end
-end
-word_mfcc = mfcc(x[pns[1]:pns[2]])
-write(memory, string(files[i][5:end], "=(", length(word_mfcc[1]),")", word_mfcc[1], "\n"))
-println(length(x[pns[1]:pns[2]]))
-println(length(word_mfcc[1]))
-println(count, " ", count_sound, " ", pns);
-if(length(pns) > 4)
+    #coordinates, fs = wavread(string(AUDIO_DIR, dir[i]), 30000);
     println(files[i])
-    break;
+    x, fs = wavread(string(AUDIO_DIR, files[i], ".wav"))
+    #=min = 100.0
+    avr = 0.0;
+    max = 0.0;
+
+    for j=2:length(x_word)
+        buf = abs(abs(x_word[j-1]) - abs(x_word[j]))
+        if(buf > max)
+            max = buf
+        end
+        if(buf < min && buf != 0.0)
+            min = buf
+        end
+        avr = avr + buf;
+    end
+    println(avr/length(x_word))
+    println(max)
+    println(min)=#
+    pns = getWordPoints(x)
+    word_mfcc = mfcc(x[pns[1]:pns[2]])
+    if(rewrite)
+        write(memory, string(files[i][5:end], "=(", length(word_mfcc[1]),")", word_mfcc[1], "\n"))
+    end
+    global maxLenMfcc = typemax(Int64);
+    if(length(word_mfcc) < maxLenMfcc)
+        maxLenMfcc = length(word_mfcc[1])
+    end
+    println(length(x[pns[1]:pns[2]]))
+    println(length(word_mfcc[1]))
+    #println(count, " ", count_sound, " ", pns);
+    if(length(pns) > 4)
+        println(files[i])
+        break;
+    end
 end
-end
+println(maxLenMfcc)
 #=plot(x_word, "r")
 title(files[i])
 plt[:show]()=#
