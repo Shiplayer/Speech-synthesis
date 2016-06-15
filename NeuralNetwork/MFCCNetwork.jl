@@ -1,6 +1,6 @@
 push!(LOAD_PATH, "Neurons/")
 using WAV;
-using PyPlot
+#using PyPlot
 using MFCC;
 using MFCCNeuron;
 
