@@ -85,10 +85,11 @@ end
 
 AUDIO = "002 aunt.wav";
 
-#memory = open("Memoty/Str2MFCC.txt", "w")
+memory = open("Memory/Str2MFCC.txt", "w")
 
 
-for i=1:length(dir)
+for i=1:length(files)
+#for i=1:2
 #coordinates, fs = wavread(string(AUDIO_DIR, dir[i]), 30000);
 println(files[i])
 x, fs = wavread(string(AUDIO_DIR, files[i], ".wav"))
@@ -140,10 +141,11 @@ for j=2:length(x)
         end
     end
 end
+word_mfcc = mfcc(x[pns[1]:pns[2]])
+write(memory, string(files[i][5:end], "=(", length(word_mfcc[1]),")", word_mfcc[1], "\n"))
+println(length(x[pns[1]:pns[2]]))
+println(length(word_mfcc[1]))
 println(count, " ", count_sound, " ", pns);
-plot(x, "r")
-title(files[i])
-plt[:show]()
 if(length(pns) > 4)
     println(files[i])
     break;
