@@ -6,6 +6,8 @@ using MFCCNeuron
     export changeWidth
     export showWidth
 
+    srand(1234567890)
+
     type Layer
         neurons
         layerSize
@@ -52,11 +54,8 @@ using MFCCNeuron
     end
 
     function changeWidth(l::Layer, input, output)
-        ans = setInput(l, input)
         for i=1:length(ans)
-            if(ans[i] != output[i])
-                changeWidthNeuron(l.neurons[i], getFrame(input, i, l.inputDataSize))
-            end
+            changeWidthNeuron(l.neurons[i], getFrame(input, i, l.inputDataSize), output)
         end
     end
 

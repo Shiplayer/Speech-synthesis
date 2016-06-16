@@ -1,6 +1,7 @@
 push!(LOAD_PATH, "Neurons/")
 using MFCCLayer;
 dict = Dict();
+dict_point = Dict();
 
 MEMORYPATH = "Memory/Str2MFCC.txt"
 memory = open(MEMORYPATH, "r")
@@ -10,19 +11,22 @@ count = 0
 names = Array{ASCIIString, 1}()
 
 for l in eachline(memory)
-    global line = split(l, "=");
+    global line = split(l, "/");
+    if(OS_NAME == :Windows)
+        line = chop(line)
+    end
     push!(names, line[1]);
     mfcc = line[2];
-    if(OS_NAME == :Windows)
-        mfcc = chop(mfcc)
-    end
+    points = line[3];
     coeff = [parse(i) for i in split(mfcc[2:end-2], ",")]
+    points = [parse(i) for i in split(point[2:end-2], ",")]
     count = count + 1;
-    if(count % 25 == 0)
+    if(count % 100 == 0)
         println(count / 100)
         break;
     end
     dict[line[1]] = coeff;
+    dict_point[line[1]] = points;
 end
 
 println(length(dict));
@@ -30,7 +34,7 @@ pop!(names)
 println(names)
 
 l = Layer(1024, 2, :get)
-l2 = Layer(256, 4)
+l2 = Layer(256, 6)
 
 function convert2bits(str::ASCIIString)
     str = reverse(str)
@@ -71,31 +75,33 @@ end
 
 function getAns(key)
     mfcc = dict[key];
+    points = dict_point[key]
     ans = setInput(l, mfcc) #256 bits
+    new_input = Array{Float64, 1}()
+    j=1
+    for i=1:4:length(ans)
+        append!(new_input, ans[i:(i+3)])
+        append!(new_input, points[j:(j+1)])
+        j = j + 2
+    end
+    ans = setInput(l2, new_input)
+    return ans, new_input
 end
 
 count = 0;
 while(true)
     count = count + 1
-    input = rand(names)
-    ans = getAns(input)
-    if(count % 100 == 0)
-        println(ans)
-        println("width begin");
-        showWidth(l);
-        println("width end");
-        println(count)
-    end
-    ans = convert2word(ans)
-    if(ans != input)
-        changeWidth(l, dict[input], convert2bits(input))
-    else
-        println("check")
+    for i = 1:count
+        input = rand(names)
+        ans, new_input = getAns(input)
+        changeWidth(l2, new_input, convert2bits(input))
         if(check())
             break;
         end
     end
 end
+
+println("learned")
 
 while(true)
     println("next command:")
