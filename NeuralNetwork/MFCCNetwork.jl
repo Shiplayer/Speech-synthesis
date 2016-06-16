@@ -2,7 +2,7 @@ push!(LOAD_PATH, "Neurons/")
 using WAV;
 #using PyPlot
 using MFCC;
-using MFCCNeuron;
+using MFCCLayer;
 
 #=function splitArray(x, channels = 2)
     noise = 0
@@ -103,7 +103,6 @@ function getWordPoints(x::Array{Float64, 2})
 end
 
 function init()
-
 end
 
 AUDIO_DIR = "../test audio words/wav/";
@@ -117,19 +116,21 @@ end
 
 MEMORYPATH = "Memory/Str2MFCC.txt"
 AUDIO = "002 aunt.wav";
-memory = open(MEMORYPATH, "w")
+
+if(!ispath(MEMORYPATH))
+    global memory = open(MEMORYPATH, "w")
+end
 rewrite = false;
 for k in ARGS
     if(k == "-r")
         rewrite = true;
+        global memory = open(MEMORYPATH, "w")
     end
 end
 
-if(!rewrite && !ispath(MEMORYPATH))
-    rewrite = true;
-end
+l1 = Layer(256, 8)
 
-for i=1:length(files)
+for i=1:10
 #for i=1:2
     #coordinates, fs = wavread(string(AUDIO_DIR, dir[i]), 30000);
     println(files[i])
@@ -154,14 +155,17 @@ for i=1:length(files)
     pns = getWordPoints(x)
     word_mfcc = mfcc(x[pns[1]:pns[2]])
     if(rewrite)
-        write(memory, string(files[i][5:end], "=(", length(word_mfcc[1]),")", word_mfcc[1], "\n"))
+        coeff = Array{Float64, 1}()
+        for j in word_mfcc
+            append!(coeff, [n for n in j])
+        write(memory, string(files[i][5:end], "=(", coeff, "\n"))
     end
     global maxLenMfcc = typemax(Int64);
     if(length(word_mfcc) < maxLenMfcc)
         maxLenMfcc = length(word_mfcc[1])
     end
-    println(length(x[pns[1]:pns[2]]))
-    println(length(word_mfcc[1]))
+    #println(length(x[pns[1]:pns[2]]))
+    #println(length(word_mfcc[1]))
     #println(count, " ", count_sound, " ", pns);
     if(length(pns) > 4)
         println(files[i])
