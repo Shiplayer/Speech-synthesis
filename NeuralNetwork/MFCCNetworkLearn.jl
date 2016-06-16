@@ -60,9 +60,9 @@ while(true)
     end
     cmd = chop(cmd)
     if(cmd == "change")
-        l.changeWidth(l, input, convert2bits(input))
+        changeWidth(l, input, convert2bits(input))
     elseif(cmd == "show")
-        l.showWidth(l)
+        showWidth(l)
     elseif cmd == "exit"
         break;
     else

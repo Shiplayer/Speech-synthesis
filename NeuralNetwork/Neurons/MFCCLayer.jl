@@ -4,6 +4,7 @@ using MFCCNeuron
     export Layer
     export setInput
     export changeWidth
+    export showWidth
 
     type Layer
         neurons
@@ -43,7 +44,7 @@ using MFCCNeuron
         ans = setInput(l, input)
         for i=1:length(ans)
             if(ans[i] != output[i])
-                Neuron.changeWidth(l.neurons[i], getFrame(input, i, l.widthSize))
+                changeWidthNeuron(l.neurons[i], getFrame(input, i, l.neurons[i].widthSize))
             end
         end
     end

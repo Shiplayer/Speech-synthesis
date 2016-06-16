@@ -1,8 +1,8 @@
 module MFCCNeuron
 
     export Neuron
-    export sigmoid
     export setInputData
+    export changeWidthNeuron
 
     type Neuron
         width
@@ -20,7 +20,7 @@ module MFCCNeuron
         return 0;
     end
 
-    function changeWidth(n::Neuron, input)
+    function changeWidthNeuron(n::Neuron, input)
         n.width = n.width .+ n.h .* (input - n.width)
     end
 
