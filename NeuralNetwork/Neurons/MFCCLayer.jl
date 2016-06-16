@@ -14,8 +14,8 @@ using MFCCNeuron
     end
 
     function showWidth(l::Layer)
-        for n in neurons
-            println(n.width)
+        for n in l.neurons
+            println("width: ", n.width)
         end
     end
 

@@ -8,7 +8,7 @@ module MFCCNeuron
         width
         h
         lim
-        Neuron(size) = new([0. for i=1:size], 0.1, 0.7)
+        Neuron(size) = new([0. for i=1:size], 0.01, 0.9)
     end
 
     function setInputData(n::Neuron, input)
@@ -28,7 +28,7 @@ module MFCCNeuron
     end
 
     function sigmoid(x)
-        return 1. ./ (1. .+ exp(-x))
+        return 1. / (1. + exp(-x))
     end
 
 end

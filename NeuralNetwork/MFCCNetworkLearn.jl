@@ -60,7 +60,7 @@ input = "child"
 
 function check()
     for i in keys(dict)
-        ans = getAns(i)
+        ans = convert2word(getAns(i))
         if(i != ans)
             return false;
         end
@@ -71,7 +71,6 @@ end
 function getAns(key)
     mfcc = dict[key];
     ans = setInput(l, mfcc) #256 bits
-    ans = convert2word(ans)
 end
 
 count = 0;
@@ -80,11 +79,17 @@ while(true)
     input = rand(names)
     ans = getAns(input)
     if(count % 100 == 0)
+        println(ans)
+        println("width begin");
+        showWidth(l);
+        println("width end");
         println(count)
     end
+    ans = convert2word(ans)
     if(ans != input)
         changeWidth(l, dict[input], convert2bits(input))
     else
+        println("check")
         if(check())
             break;
         end
