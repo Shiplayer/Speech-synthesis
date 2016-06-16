@@ -159,7 +159,7 @@ for i=1:length(files)
         for j in word_mfcc[1]
             append!(coeff, [n for n in j])
         end
-        write(memory, string(files[i][5:end], "=(", coeff, "\n"))
+        write(memory, string(files[i][5:end], "=", coeff, "\n"))
     end
     global maxLenMfcc = typemax(Int64);
     if(length(word_mfcc) < maxLenMfcc)
