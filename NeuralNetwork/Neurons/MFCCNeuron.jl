@@ -11,13 +11,17 @@ module MFCCNeuron
         Neuron(size) = new([0. for i=1:size], 0.01, 0.9)
     end
 
-    function setInputData(n::Neuron, input)
+    function setInputData(n::Neuron, input, m::Symbol = :just)
         s = sum(input .* n.width)
         ans = sigmoid(s)
-        if(ans > n.lim)
-            return 1;
+        if(m == :just)
+            if(ans > n.lim)
+                return 1;
+            end
+            return 0;
+        else
+            return ans;
         end
-        return 0;
     end
 
     function changeWidthNeuron(n::Neuron, input)

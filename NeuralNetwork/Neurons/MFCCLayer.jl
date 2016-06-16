@@ -10,7 +10,9 @@ using MFCCNeuron
         neurons
         layerSize
         inputDataSize
-        Layer(size::Int64, widthSize::Int64) = new([Neuron(widthSize) for i=1:size], size, widthSize)
+        mode
+        Layer(size::Int64, widthSize::Int64) = new([Neuron(widthSize) for i=1:size], size, widthSize, :just)
+        Layer(size::Int64, widthSize::Int64, m) = new([Neuron(widthSize) for i=1:size], size, widthSize, m)
     end
 
     function showWidth(l::Layer)
@@ -20,24 +22,33 @@ using MFCCNeuron
     end
 
     function setInput(l::Layer, input)
-        ans = Array{Int64, 1}()
-        for i=1:l.layerSize
-            if(i*l.inputDataSize <= length(input))
-                buf = input[((i-1) * l.inputDataSize + 1):(i * l.inputDataSize)];
-                ansNeuron = setInputData(l.neurons[i], buf)
-                push!(ans, ansNeuron);
-            elseif((i-1) * l.inputDataSize + 1 <= length(input))
-                data = [0.0 for j=1:l.inputDataSize]
-                n=1;
-                for j=((i-1) * l.inputDataSize + 1):length(input)
-                    data[n] = input[j]
+        if(l.m == :just)
+            ans = Array{Int64, 1}()
+            for i=1:l.layerSize
+                if(i*l.inputDataSize <= length(input))
+                    buf = input[((i-1) * l.inputDataSize + 1):(i * l.inputDataSize)];
+                    ansNeuron = setInputData(l.neurons[i], buf)
+                    push!(ans, ansNeuron);
+                elseif((i-1) * l.inputDataSize + 1 <= length(input))
+                    data = [0.0 for j=1:l.inputDataSize]
+                    n=1;
+                    for j=((i-1) * l.inputDataSize + 1):length(input)
+                        data[n] = input[j]
+                    end
+                    push!(ans, setInputData(l.neurons[i], data));
+                else
+                    push!(ans, setInputData(l.neurons[i], [0. for j=1:l.inputDataSize]));
                 end
-                push!(ans, setInputData(l.neurons[i], data));
-            else
-                push!(ans, setInputData(l.neurons[i], [0. for j=1:l.inputDataSize]));
             end
+            return ans;
+        elseif(l.m == :get)
+            ans = Array{Float64, 1}()
+            for i=1:l.layerSize
+                frame = getFrame(input, i, l.inputDataSize)
+                push!(ans, setInputData(l.neurons[i], frame, l.m))
+            end
+            return ans;
         end
-        return ans;
     end
 
     function changeWidth(l::Layer, input, output)

@@ -29,7 +29,8 @@ println(length(dict));
 pop!(names)
 println(names)
 
-l = Layer(256, 8)
+l = Layer(1024, 2, :get)
+l2 = Layer(256, 4)
 
 function convert2bits(str::ASCIIString)
     str = reverse(str)

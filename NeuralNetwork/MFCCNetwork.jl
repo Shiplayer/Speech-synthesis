@@ -153,13 +153,14 @@ for i=1:length(files)
     println(max)
     println(min)=#
     pns = getWordPoints(x)
+    word = x[pns[1]:pns[2]]
     word_mfcc = mfcc(x[pns[1]:pns[2]])
     if(rewrite)
         coeff = Array{Float64, 1}()
         for j in word_mfcc[1]
             append!(coeff, [n for n in j])
         end
-        write(memory, string(files[i][5:end], "=", coeff, "\n"))
+        write(memory, string(files[i][5:end], "/", coeff, "/", sort(word)[(end - 512 + 1):end], "\n"))
     end
     global maxLenMfcc = typemax(Int64);
     if(length(word_mfcc) < maxLenMfcc)
