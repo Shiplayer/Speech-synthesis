@@ -130,7 +130,7 @@ end
 
 l1 = Layer(256, 8)
 
-for i=1:10
+for i=1:length(files)
 #for i=1:2
     #coordinates, fs = wavread(string(AUDIO_DIR, dir[i]), 30000);
     println(files[i])
@@ -156,8 +156,9 @@ for i=1:10
     word_mfcc = mfcc(x[pns[1]:pns[2]])
     if(rewrite)
         coeff = Array{Float64, 1}()
-        for j in word_mfcc
+        for j in word_mfcc[1]
             append!(coeff, [n for n in j])
+        end
         write(memory, string(files[i][5:end], "=(", coeff, "\n"))
     end
     global maxLenMfcc = typemax(Int64);
