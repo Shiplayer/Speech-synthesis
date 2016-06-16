@@ -44,22 +44,29 @@ using MFCCNeuron
         ans = setInput(l, input)
         for i=1:length(ans)
             if(ans[i] != output[i])
-                changeWidthNeuron(l.neurons[i], getFrame(input, i, l.neurons[i].widthSize))
+                changeWidthNeuron(l.neurons[i], getFrame(input, i, l.inputDataSize))
             end
         end
     end
 
     function getFrame(input, index, size)
+        #=println("input: ", input)
+        println("length(input) = ", length(input))
+        println("index: ", index, "; index * size = ", index * size)
+        println("size: ", size)
+        =#
+
         if(index * size <= length(input))
             return input[((index - 1) * size + 1):(index * size)];
         elseif (index - 1) * size + 1 <= length(input)
-            data = [0.0 for j=1:l.inputDataSize]
+            data = [0.0 for j=1:size]
             n=1;
-            for j=((i-1) * l.inputDataSize + 1):length(input)
+            for j=((index-1) * size + 1):length(input)
                 data[n] = input[j]
             end
             return data;
         else
+            println("empty")
             return [0. for i=1:size]
         end
     end

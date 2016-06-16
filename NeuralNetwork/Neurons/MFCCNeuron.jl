@@ -8,7 +8,7 @@ module MFCCNeuron
         width
         h
         lim
-        Neuron(size) = new([rand(Float64) for i=1:size], 0.1, 0.7)
+        Neuron(size) = new([0. for i=1:size], 0.1, 0.7)
     end
 
     function setInputData(n::Neuron, input)
@@ -21,7 +21,10 @@ module MFCCNeuron
     end
 
     function changeWidthNeuron(n::Neuron, input)
-        n.width = n.width .+ n.h .* (input - n.width)
+        #println("after: ", n.width)
+        #println((input))
+        n.width = n.width .+ (n.h .* (input .- n.width))
+        #println("before: ", n.width)
     end
 
     function sigmoid(x)
