@@ -27,22 +27,27 @@ println(length(dict));
 l = Layer(256, 8)
 
 function convert2bits(str::ASCIIString)
-    ans = Array{Int64, 1}()
+    ans = [0 for i =1:(256 - length(str) * 8)]
     for i=1:length(str)
-        append!(ans, bits(str[i])[end-7:end])
+        a = bits(str[i])[end-7:end]
+        buf = [Int(a[j] - '0') for j=1:length(a)]
+        println(buf)
+        append!(ans, buf)
     end
     return ans
 end
 
 function convert2word(str::Array{Int64, 1})
     ans = ""
-    for i=1:8:length(str)
-        a = str[(length(str) - i + 1):length(str)]
-        s = sum([a[i] * 2^(length(a) - i) for i=1:length(a)])
+    for i=1:8:length(str)-1
+        #a = str[(length(str) - i + 1):(length(str) - i + 7)]
+        a = str[i:(i+7)]
+        s = sum([a[j] * 2^(length(a) - j) for j=1:length(a)])
+        println(s)
         if(s == 0)
-            break;
+            continue
         end
-        ans = string(ans, s)
+        ans = string(ans, Char(s))
     end
     return ans;
 end
@@ -55,8 +60,9 @@ while(true)
     end
     cmd = chop(cmd)
     if(cmd == "change")
-        println(convert2bits(input))
-        #l.changeWidth(l, input, )
+        l.changeWidth(l, input, convert2bits(input))
+    elseif(cmd == "show")
+        l.showWidth(l)
     elseif cmd == "exit"
         break;
     else
@@ -67,6 +73,7 @@ while(true)
         end
         mfcc = dict[input];
         ans = setInput(l, mfcc) #256 bits
+        println(ans)
         ans = convert2word(ans)
         if(length(ans) > 0)
             println(ans)

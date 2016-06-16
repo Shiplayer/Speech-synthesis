@@ -12,6 +12,12 @@ using MFCCNeuron
         Layer(size::Int64, widthSize::Int64) = new([Neuron(widthSize) for i=1:size], size, widthSize)
     end
 
+    function showWidth(l::Layer)
+        for n in neurons
+            println(n.width)
+        end
+    end
+
     function setInput(l::Layer, input)
         ans = Array{Int64, 1}()
         for i=1:l.layerSize
