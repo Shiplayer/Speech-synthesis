@@ -17,9 +17,7 @@ using MFCCNeuron
         for i=1:l.layerSize
             if(i*l.inputDataSize <= length(input))
                 buf = input[((i-1) * l.inputDataSize + 1):(i * l.inputDataSize)];
-                println(typeof(buf))
-                println(buf);
-                ansNeuron = Neuron.setInput(l.neurons[i], buf)
+                ansNeuron = setInputData(l.neurons[i], buf)
                 push!(ans, ansNeuron);
             elseif((i-1) * l.inputDataSize + 1 <= length(input))
                 data = [0.0 for j=1:l.inputDataSize]
@@ -27,9 +25,9 @@ using MFCCNeuron
                 for j=((i-1) * l.inputDataSize + 1):length(input)
                     data[n] = input[j]
                 end
-                push!(ans, Neuron.setInput(l.neurons[i], data));
+                push!(ans, setInputData(l.neurons[i], data));
             else
-                push!(ans, Neuron.setInput(l.neurons[i], [0. for j=1:l.inputDataSize]));
+                push!(ans, setInputData(l.neurons[i], [0. for j=1:l.inputDataSize]));
             end
         end
         return ans;

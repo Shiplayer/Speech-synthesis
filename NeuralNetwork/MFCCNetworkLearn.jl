@@ -15,7 +15,7 @@ for l in eachline(memory)
     end
     coeff = [parse(i) for i in split(mfcc[2:end-2], ",")]
     count = count + 1;
-    if(count % 100 == 0)
+    if(count % 25 == 0)
         println(count / 100)
         break;
     end
@@ -34,11 +34,11 @@ function convert2bits(str::ASCIIString)
     return ans
 end
 
-function convert2word(str::ASCIIString)
+function convert2word(str::Array{Int64, 1})
     ans = ""
     for i=1:8:length(str)
         a = str[(length(str) - i + 1):length(str)]
-        s = sum([Int(a[i] - '0') * 2^(length(a) - i) for i=1:length(a)])
+        s = sum([a[i] * 2^(length(a) - i) for i=1:length(a)])
         if(s == 0)
             break;
         end
@@ -55,7 +55,8 @@ while(true)
     end
     cmd = chop(cmd)
     if(cmd == "change")
-        changeWidth(input)
+        println(convert2bits(input))
+        #l.changeWidth(l, input, )
     elseif cmd == "exit"
         break;
     else

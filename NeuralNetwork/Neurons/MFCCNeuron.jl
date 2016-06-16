@@ -2,6 +2,7 @@ module MFCCNeuron
 
     export Neuron
     export sigmoid
+    export setInputData
 
     type Neuron
         width
@@ -10,7 +11,7 @@ module MFCCNeuron
         Neuron(size) = new([rand(Float64) for i=1:size], 0.1, 0.7)
     end
 
-    function setInput(n::Neuron, input)
+    function setInputData(n::Neuron, input)
         s = sum(input .* n.width)
         ans = sigmoid(s)
         if(ans > n.lim)
