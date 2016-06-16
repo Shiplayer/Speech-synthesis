@@ -46,7 +46,7 @@ using MFCCNeuron
         elseif(l.mode == :get)
             ans = Array{Float64, 1}()
             for i=1:l.layerSize
-                println(i, " ", l.inputDataSize, " ", length(input))
+                #println(i, " ", l.inputDataSize, " ", length(input))
                 frame = getFrame(input, i, l.inputDataSize)
                 push!(ans, setInputData(l.neurons[i], frame, l.mode))
             end
@@ -54,9 +54,9 @@ using MFCCNeuron
         end
     end
 
-    function changeWidth(l::Layer, input, output)
-        for i=1:length(ans)
-            changeWidthNeuron(l.neurons[i], getFrame(input, i, l.inputDataSize), output)
+    function changeWidth(l::Layer, input, output, false_output)
+        for i=1:length(output)
+            changeWidthNeuron(l.neurons[i], getFrame(input, i, l.inputDataSize), output[i], false_output[i])
         end
     end
 
@@ -77,7 +77,7 @@ using MFCCNeuron
             end
             return data;
         else
-            println("empty")
+            #println("empty")
             return [0. for i=1:size]
         end
     end

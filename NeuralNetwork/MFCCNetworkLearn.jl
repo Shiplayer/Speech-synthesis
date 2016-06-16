@@ -65,7 +65,8 @@ input = "child"
 
 function check()
     for i in keys(dict)
-        ans = convert2word(getAns(i))
+        ans, _ = getAns(i)
+        ans = convert2word(ans)
         if(i != ans)
             return false;
         end
@@ -94,7 +95,10 @@ while(true)
     for i = 1:count
         input = rand(names)
         ans, new_input = getAns(input)
-        changeWidth(l2, new_input, convert2bits(input))
+        #println("false_ans: ", ans)
+        #println("ans: ", convert2bits(input))
+        println(convert2word(ans), " vs ", input)
+        changeWidth(l2, new_input, convert2bits(input), ans)
         if(check())
             break;
         end
