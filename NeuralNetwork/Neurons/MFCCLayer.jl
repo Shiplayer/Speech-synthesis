@@ -16,7 +16,11 @@ using MFCCNeuron
         ans = Array{Int64, 1}()
         for i=1:l.layerSize
             if(i*l.inputDataSize <= length(input))
-                push!(ans, Neuron.setInput(l.neurons[i], input[((i-1) * l.inputDataSize + 1):(i * l.inputDataSize)]));
+                buf = input[((i-1) * l.inputDataSize + 1):(i * l.inputDataSize)];
+                println(typeof(buf))
+                println(buf);
+                ansNeuron = Neuron.setInput(l.neurons[i], buf)
+                push!(ans, ansNeuron);
             elseif((i-1) * l.inputDataSize + 1 <= length(input))
                 data = [0.0 for j=1:l.inputDataSize]
                 n=1;
