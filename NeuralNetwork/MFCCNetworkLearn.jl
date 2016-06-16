@@ -11,15 +11,15 @@ count = 0
 names = Array{ASCIIString, 1}()
 
 for l in eachline(memory)
-    global line = split(l, "/");
     if(OS_NAME == :Windows)
-        line = chop(line)
+        l = chop(l)
     end
+    global line = split(l, "/");
     push!(names, line[1]);
     mfcc = line[2];
     points = line[3];
     coeff = [parse(i) for i in split(mfcc[2:end-2], ",")]
-    points = [parse(i) for i in split(point[2:end-2], ",")]
+    points = [parse(i) for i in split(points[2:end-2], ",")]
     count = count + 1;
     if(count % 100 == 0)
         println(count / 100)

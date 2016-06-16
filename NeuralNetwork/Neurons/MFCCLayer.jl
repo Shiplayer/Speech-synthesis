@@ -24,7 +24,7 @@ using MFCCNeuron
     end
 
     function setInput(l::Layer, input)
-        if(l.m == :just)
+        if(l.mode == :just)
             ans = Array{Int64, 1}()
             for i=1:l.layerSize
                 if(i*l.inputDataSize <= length(input))
@@ -43,11 +43,12 @@ using MFCCNeuron
                 end
             end
             return ans;
-        elseif(l.m == :get)
+        elseif(l.mode == :get)
             ans = Array{Float64, 1}()
             for i=1:l.layerSize
+                println(i, " ", l.inputDataSize, " ", length(input))
                 frame = getFrame(input, i, l.inputDataSize)
-                push!(ans, setInputData(l.neurons[i], frame, l.m))
+                push!(ans, setInputData(l.neurons[i], frame, l.mode))
             end
             return ans;
         end
