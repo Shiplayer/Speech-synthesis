@@ -89,6 +89,14 @@ function getAns(key)
     return ans, new_input
 end
 
+#function changeWidthLayers(layer::Layer, layer2::Layer, new_input, ans, false_ans)
+
+#end
+
+function errors(false_ans, ans)
+    s = sum((false_ans .- ans).^2) / 2
+end
+
 count = 0;
 while(true)
     count = count + 1
@@ -97,7 +105,9 @@ while(true)
         ans, new_input = getAns(input)
         #println("false_ans: ", ans)
         #println("ans: ", convert2bits(input))
+        println(errors(ans, convert2bits(input)))
         println(convert2word(ans), " vs ", input)
+        #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
         changeWidth(l2, new_input, convert2bits(input), ans)
         if(check())
             break;
