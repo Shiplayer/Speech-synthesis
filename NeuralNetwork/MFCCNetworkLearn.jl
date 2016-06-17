@@ -4,10 +4,25 @@ dict = Dict();
 dict_point = Dict();
 dict_output_layout = Dict();
 
-MEMORYPATH = "Memory/Str2MFCC.txt"
-memory = open(MEMORYPATH, "r")
+rewrite = false;
+
+for k in ARGS
+    if(k == "-r")
+        rewrite = true;
+    end
+end
+
+
+MEMORYPATH = "Memory/"
+DATA = "Str2MFCC.txt"
+memory = open(string(MEMORYPATH, DATA), "r")
 
 count = 0
+
+#l = Layer(1024, 2048, :get) # скрытый слой, который возвращает значение сигмойдной функции
+l_out = Layer(512, 2048, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
+#l2 = Layer(256, 1024, :get) # скрытый слой, который принимает бинарное представление из 512 и еще в кажждый нейрон отправляем значение амплитуд
+l2_out = Layer(256, 1024)   # отправляем значение сигмойдной функции из слоя выше и получаем бинарное представление слова
 
 names = Array{ASCIIString, 1}()
 
@@ -26,20 +41,14 @@ for l in eachline(memory)
     dict[line[1]] = coeff;
     dict_point[line[1]] = points;
     dict_output_layout[line[1]] = rand((0:1), 512)
-    if(count % 10 == 0)
+    if(count % 100 == 0)
         println(count / 100)
-        break;
     end
 end
 
 println(length(dict));
 #pop!(names)
 println(names)
-
-#l = Layer(1024, 2048, :get) # скрытый слой, который возвращает значение сигмойдной функции
-l_out = Layer(512, 2048, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
-#l2 = Layer(256, 1024, :get) # скрытый слой, который принимает бинарное представление из 512 и еще в кажждый нейрон отправляем значение амплитуд
-l2_out = Layer(256, 1024)   # отправляем значение сигмойдной функции из слоя выше и получаем бинарное представление слова
 
 function convert2bits(str::ASCIIString)
     str = reverse(str)
@@ -140,40 +149,52 @@ function checkAns()
     return true;
 end
 
+if(isfile(string(MEMORYPATH, "width_layer1.data")) || rewrite)
+    loadWidth(l_out, string(MEMORYPATH, "width_layer1.data"))
+else
+    # обучаем первый слой
+    while(!checkAns())
+        input = rand(names)
+        #ans = getAnsfromLayer(input, :one)
+        ans = getAns(input)
+        #println(length(ans), length(dict_output_layout[input]))
+        #println("false_ans: ", ans)
+        #println("ans: ", dict_output_layout[input])
+        #println("ans: ", convert2bits(input))
+        println(errors(ans, dict_output_layout[input]))
+        #println(convert2word(ans), " vs ", input)
+        #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
 
-# обучаем первый слой
-while(!checkAns())
-    input = rand(names)
-    #ans = getAnsfromLayer(input, :one)
-    ans = getAns(input)
-    #println(length(ans), length(dict_output_layout[input]))
-    #println("false_ans: ", ans)
-    #println("ans: ", dict_output_layout[input])
-    #println("ans: ", convert2bits(input))
-    println(errors(ans, dict_output_layout[input]))
-    #println(convert2word(ans), " vs ", input)
-    #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
+        changeWidth(l_out, dict[input], dict_output_layout[input], ans)
 
-    changeWidth(l_out, dict[input], dict_output_layout[input], ans)
-    
-    #println(dict[input])
-    #println(dict_output_layout[input])
-    #println(ans)
+        #println(dict[input])
+        #println(dict_output_layout[input])
+        #println(ans)
+    end
+
+
+    saveWidth(l_out, string(MEMORYPATH, "width_layer1.data"))
+    println("layout1 is learned and saved")
+
 end
 
-println("layout1 is learned")
-
-function getAnsLayer2(key)
+function getAnsLayer(key)
     ans = setInputAllinAll(l_out, dict[key])
     ans = convert(Array{Float64, 1}, ans)
     append!(ans, dict_point[key])
+    println(length(ans))
+    input_new = ans
     ans = setInputAllinAll(l2_out, ans)
+    return ans, input_new;
 end
 
 function checkAnsLayer2()
+    println("check")
     for k in keys(dict)
-        ans = getAnsLayer2(k)
-        if(convert2bits(k) != ans)
+        ans, _ = getAnsLayer(k)
+        ans = convert2word(ans)
+        println(ans, " vs ", k)
+        if(k != ans)
             return false;
         end
     end
@@ -181,13 +202,21 @@ function checkAnsLayer2()
     return true;
 end
 
-while(!checkAnsLayer2())
-    input = rand(names)
-    ans = getAnsLayer2(input)
-    println(errors(ans, convert2bits(input)))
-    changeWidth(l2_out, dict[input], convert2bits(input), ans)
+
+if(isfile(string(MEMORYPATH, "width_layer2.data")) || rewrite)
+    loadWidth(l2_out, string(MEMORYPATH, "width_layer2.data"))
+else
+    while(!checkAnsLayer2())
+        input = rand(names)
+        ans, input_new = getAnsLayer(input)
+        println(errors(ans, convert2bits(input)))
+        changeWidth(l2_out, input_new, convert2bits(input), ans)
+    end
+
+    saveWidth(l2_out, string(MEMORYPATH, "width_layer2.data"))
+    println("learned and saved")
 end
-count_2 = 0
+#=count_2 = 0
 while(true)
     count_2 = count_2 + 1
     for i = 1:count_2
@@ -205,8 +234,7 @@ while(true)
         break;
     end
 end
-
-println("learned")
+=#
 
 while(true)
     println("next command:")
@@ -215,11 +243,7 @@ while(true)
         cmd = chop(cmd)
     end
     cmd = chop(cmd)
-    if(cmd == "change")
-        changeWidth(l, dict[input], convert2bits(input))
-    elseif(cmd == "show")
-        showWidth(l)
-    elseif cmd == "exit"
+    if cmd == "exit"
         break;
     else
         input = cmd;
@@ -227,10 +251,9 @@ while(true)
             println("i dont know this word")
             continue;
         end
-        mfcc = dict[input];
-        ans = setInput(l, mfcc) #256 bits
-        println(ans)
+        ans = getAnsLayer(input)
         ans = convert2word(ans)
+        println(ans)
         if(length(ans) > 0)
             println(ans)
         else

@@ -6,6 +6,8 @@ using MFCCNeuron
     export changeWidth
     export showWidth
     export setInputAllinAll
+    export saveWidth
+    export loadWidth
 
     srand(1234567890)
 
@@ -17,6 +19,26 @@ using MFCCNeuron
         Layer(size::Int64, widthSize::Int64) = Layer(size, widthSize, :just) #new([Neuron(widthSize) for i=1:size], size, widthSize, :just)
         Layer(size::Int64, widthSize::Int64, m, limit) = new([Neuron(widthSize, limit) for i=1:size], size, widthSize, m)
         Layer(size::Int64, widthSize::Int64, m) = new([Neuron(widthSize) for i=1:size], size, widthSize, m)
+    end
+
+    function loadWidth(l::Layer, path::ASCIIString)
+        fileWithWidth = open(path, "r")
+        for f in eachline(fileWithWidth)
+            if(OS_NAME == :Windows)
+                f = chop(f)
+            end
+            w = f[2:end-2]
+            for n in l.neurons
+                n.width = [parse(i) for i in split(w, ",")]
+            end
+        end
+    end
+
+    function saveWidth(l::Layer, path::ASCIIString)
+        fileWithWidth = open(path, "w")
+        for n in l.neurons
+            write(fileWithWidth, string(n.width), "\n")
+        end
     end
 
     function showWidth(l::Layer)
