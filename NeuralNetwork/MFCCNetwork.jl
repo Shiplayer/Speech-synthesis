@@ -155,6 +155,10 @@ for i=1:length(files)
     pns = getWordPoints(x)
     word = x[pns[1]:pns[2]]
     word_mfcc = mfcc(x[pns[1]:pns[2]])
+    if(length(word_mfcc[1]) > 4096)
+        println(files[i])
+        continue;
+    end
     if(rewrite)
         coeff = Array{Float64, 1}()
         for j in word_mfcc[1]
