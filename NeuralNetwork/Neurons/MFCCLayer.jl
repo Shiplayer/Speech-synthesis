@@ -5,6 +5,7 @@ using MFCCNeuron
     export setInput
     export changeWidth
     export showWidth
+    export setInputAllinAll
 
     srand(1234567890)
 
@@ -55,9 +56,17 @@ using MFCCNeuron
         end
     end
 
+    function setInputAllinAll(l::Layer, input)
+        ans = Array{Int64, 1}()
+        for i=1:l.layerSize
+            push!(ans, setInputData(l.neurons[i], input))
+        end
+        return ans
+    end
+
     function changeWidth(l::Layer, input, output, false_output)
         for i=1:length(output)
-            changeWidthNeuron(l.neurons[i], getFrame(input, i, l.inputDataSize), output[i], false_output[i])
+            changeWidthNeuron(l.neurons[i], input, output[i], false_output[i])
         end
     end
 

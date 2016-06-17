@@ -22,10 +22,11 @@ for l in eachline(memory)
     coeff = [parse(i) for i in split(mfcc[2:end-2], ",")]
     points = [parse(i) for i in split(points[2:end-2], ",")]
     count = count + 1;
+    append!(coeff, [0 for i=length(coeff)+1:2048])
     dict[line[1]] = coeff;
     dict_point[line[1]] = points;
     dict_output_layout[line[1]] = rand((0:1), 512)
-    if(count % 3 == 0)
+    if(count % 10 == 0)
         println(count / 100)
         break;
     end
@@ -35,10 +36,10 @@ println(length(dict));
 #pop!(names)
 println(names)
 
-l = Layer(1024, 2, :get) # скрытый слой, который возвращает значение сигмойдной функции
-l_out = Layer(512, 2, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
-l2 = Layer(256, 4, :get) # скрытый слой, который принимает бинарное представление из 512 и еще в кажждый нейрон отправляем значение амплитуд
-l2_out = Layer(256, 1)   # отправляем значение сигмойдной функции из слоя выше и получаем бинарное представление слова
+#l = Layer(1024, 2048, :get) # скрытый слой, который возвращает значение сигмойдной функции
+l_out = Layer(512, 2048, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
+#l2 = Layer(256, 1024, :get) # скрытый слой, который принимает бинарное представление из 512 и еще в кажждый нейрон отправляем значение амплитуд
+l2_out = Layer(256, 1024)   # отправляем значение сигмойдной функции из слоя выше и получаем бинарное представление слова
 
 function convert2bits(str::ASCIIString)
     str = reverse(str)
@@ -113,6 +114,13 @@ function getAnsfromLayer(key, s::Symbol)
     end
 end
 
+function getAns(key)
+    ans = setInputAllinAll(l_out, dict[key])
+    #ans = convert(Array{Float64, 1}, ans)
+    #append!(ans, dict_point[key])
+    #ans = setInputAllinAll(l2_out, ans)
+end
+
 #function changeWidthLayers(layer::Layer, layer2::Layer, new_input, ans, false_ans)
 
 #end
@@ -121,11 +129,23 @@ function errors(false_ans, ans)
     s = sum((false_ans .- ans).^2) / 2
 end
 
+function checkAns()
+    for k in keys(dict)
+        ans = getAns(k)
+        if(dict_output_layout[k] != ans)
+            return false;
+        end
+    end
+    println("CHECK SUCCESSFUL!!!!")
+    return true;
+end
+
 
 # обучаем первый слой
-for i = 1:100
+while(!checkAns())
     input = rand(names)
-    ans = getAnsfromLayer(input, :one)
+    #ans = getAnsfromLayer(input, :one)
+    ans = getAns(input)
     #println(length(ans), length(dict_output_layout[input]))
     #println("false_ans: ", ans)
     #println("ans: ", dict_output_layout[input])
@@ -133,17 +153,40 @@ for i = 1:100
     println(errors(ans, dict_output_layout[input]))
     #println(convert2word(ans), " vs ", input)
     #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
+
     changeWidth(l_out, dict[input], dict_output_layout[input], ans)
+    
     #println(dict[input])
     #println(dict_output_layout[input])
     #println(ans)
-    if(check(:one))
-        break;
-    end
 end
 
 println("layout1 is learned")
-#return;
+
+function getAnsLayer2(key)
+    ans = setInputAllinAll(l_out, dict[key])
+    ans = convert(Array{Float64, 1}, ans)
+    append!(ans, dict_point[key])
+    ans = setInputAllinAll(l2_out, ans)
+end
+
+function checkAnsLayer2()
+    for k in keys(dict)
+        ans = getAnsLayer2(k)
+        if(convert2bits(k) != ans)
+            return false;
+        end
+    end
+    println("CHECK SUCCESSFUL!!!!")
+    return true;
+end
+
+while(!checkAnsLayer2())
+    input = rand(names)
+    ans = getAnsLayer2(input)
+    println(errors(ans, convert2bits(input)))
+    changeWidth(l2_out, dict[input], convert2bits(input), ans)
+end
 count_2 = 0
 while(true)
     count_2 = count_2 + 1

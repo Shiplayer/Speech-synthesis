@@ -19,6 +19,7 @@ module MFCCNeuron
     # второй аргумент, входные данные в нейрон
     # третий аргумент, символ, по которому мы определяем, что мы хотим получить от нейрона
     function setInputData(n::Neuron, input, m::Symbol = :just)
+        #println(length(input), " ", length(n.width))
         s = sum(input .* n.width)
         if(m == :width)
             return s;
