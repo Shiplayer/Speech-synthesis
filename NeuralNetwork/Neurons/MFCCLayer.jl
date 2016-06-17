@@ -13,7 +13,8 @@ using MFCCNeuron
         layerSize
         inputDataSize
         mode
-        Layer(size::Int64, widthSize::Int64) = new([Neuron(widthSize) for i=1:size], size, widthSize, :just)
+        Layer(size::Int64, widthSize::Int64) = Layer(size, widthSize, :just) #new([Neuron(widthSize) for i=1:size], size, widthSize, :just)
+        Layer(size::Int64, widthSize::Int64, m, limit) = new([Neuron(widthSize, limit) for i=1:size], size, widthSize, m)
         Layer(size::Int64, widthSize::Int64, m) = new([Neuron(widthSize) for i=1:size], size, widthSize, m)
     end
 
