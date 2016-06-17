@@ -12,7 +12,7 @@ module MFCCNeuron
         lim                     # порог
         o                       # значение, которое нейрон возвращает (не относится к скрытому слою)
         Neuron(size) = Neuron(size, 0.75)
-        Neuron(size, limit) = new([rand() - 0.5 for i=1:size], 0.1, limit, 0)
+        Neuron(size, limit) = new([rand() - 0.5 for i=1:size], 0.01, limit, 0)
     end
 
     # первый аргумент, нейрон, в котором мы хотим произвести вычисления

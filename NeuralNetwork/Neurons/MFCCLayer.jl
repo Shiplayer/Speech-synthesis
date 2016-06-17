@@ -23,15 +23,18 @@ using MFCCNeuron
 
     function loadWidth(l::Layer, path::ASCIIString)
         fileWithWidth = open(path, "r")
+        countLine = 0;
         for f in eachline(fileWithWidth)
+            countLine = countLine + 1
+            println(countLine)
             if(OS_NAME == :Windows)
                 f = chop(f)
             end
-            w = f[2:end-2]
-            for n in l.neurons
-                n.width = [parse(i) for i in split(w, ",")]
-            end
+            index = searchindex(f, '[') + 1
+            w = f[index:end-2]
+            l.neurons[countLine].width = [parse(i) for i in split(w, ",")]
         end
+        close(fileWithWidth)
     end
 
     function saveWidth(l::Layer, path::ASCIIString)
@@ -39,6 +42,7 @@ using MFCCNeuron
         for n in l.neurons
             write(fileWithWidth, string(n.width), "\n")
         end
+        close(fileWithWidth)
     end
 
     function showWidth(l::Layer)
@@ -78,10 +82,15 @@ using MFCCNeuron
         end
     end
 
-    function setInputAllinAll(l::Layer, input)
+    function setInputAllinAll(l::Layer, input, mode::Symbol = :just)
         ans = Array{Int64, 1}()
+        if(mode == :get)
+            ans = convert(Array{Float64, 1}, ans)
+        end
         for i=1:l.layerSize
-            push!(ans, setInputData(l.neurons[i], input))
+            buf = setInputData(l.neurons[i], input, mode)
+            #println(buf, " ", typeof(ans), mode)
+            push!(ans, buf)
         end
         return ans
     end
