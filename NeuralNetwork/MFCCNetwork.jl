@@ -162,10 +162,6 @@ for i=1:length(files)
         end
         write(memory, string(files[i][5:end], "/", coeff, "/", sort(word)[(end - 512 + 1):end], "\n"))
     end
-    global maxLenMfcc = typemax(Int64);
-    if(length(word_mfcc) < maxLenMfcc)
-        maxLenMfcc = length(word_mfcc[1])
-    end
     #println(length(x[pns[1]:pns[2]]))
     #println(length(word_mfcc[1]))
     #println(count, " ", count_sound, " ", pns);
@@ -174,7 +170,6 @@ for i=1:length(files)
         break;
     end
 end
-println(maxLenMfcc)
 #=plot(x_word, "r")
 title(files[i])
 plt[:show]()=#
