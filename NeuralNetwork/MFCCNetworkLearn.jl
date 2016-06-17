@@ -20,7 +20,7 @@ memory = open(string(MEMORYPATH, DATA), "r")
 count = 0
 
 #l = Layer(1024, 2048, :get) # скрытый слой, который возвращает значение сигмойдной функции
-l_out = Layer(512, 2048, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
+l_out = Layer(512, 4096, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
 #l2 = Layer(256, 1024, :get) # скрытый слой, который принимает бинарное представление из 512 и еще в кажждый нейрон отправляем значение амплитуд
 l2_out = Layer(256, 1024)   # отправляем значение сигмойдной функции из слоя выше и получаем бинарное представление слова
 
@@ -37,7 +37,7 @@ for l in eachline(memory)
     coeff = [parse(i) for i in split(mfcc[2:end-2], ",")]
     points = [parse(i) for i in split(points[2:end-2], ",")]
     count = count + 1;
-    append!(coeff, [0 for i=length(coeff)+1:2048])
+    append!(coeff, [0 for i=length(coeff)+1:4096])
     dict[line[1]] = coeff;
     dict_point[line[1]] = points;
     dict_output_layout[line[1]] = rand((0:1), 512)
@@ -124,6 +124,7 @@ function getAnsfromLayer(key, s::Symbol)
 end
 
 function getAns(key)
+    #println(key, " ", length(dict[key]))
     ans = setInputAllinAll(l_out, dict[key])
     #ans = convert(Array{Float64, 1}, ans)
     #append!(ans, dict_point[key])
@@ -149,9 +150,10 @@ function checkAns()
     return true;
 end
 
-if(isfile(string(MEMORYPATH, "width_layer1.data")) || rewrite)
+if(isfile(string(MEMORYPATH, "width_layer1.data")) && !rewrite)
     loadWidth(l_out, string(MEMORYPATH, "width_layer1.data"))
 else
+    println("lerning first layer is started")
     # обучаем первый слой
     while(!checkAns())
         input = rand(names)
@@ -203,7 +205,8 @@ function checkAnsLayer2()
 end
 
 
-if(isfile(string(MEMORYPATH, "width_layer2.data")) || rewrite)
+if(isfile(string(MEMORYPATH, "width_layer2.data")) && !rewrite)
+    println("loading width")
     loadWidth(l2_out, string(MEMORYPATH, "width_layer2.data"))
 else
     while(!checkAnsLayer2())
