@@ -1,6 +1,6 @@
 push!(LOAD_PATH, "Neurons/")
 using WAV;
-#using PyPlot
+using PyPlot
 using MFCC;
 using MFCCLayer;
 
@@ -80,6 +80,7 @@ function getWordPoints(x::Array{Float64, 2})
     lim = 0.0002
     count_sound = 0;
     count = 0;
+    points = 600
     for j=2:length(x)
         buf = abs(abs(x[j-1]) - abs(x[j]))
         if(buf > lim)
@@ -89,9 +90,9 @@ function getWordPoints(x::Array{Float64, 2})
             end
             flag = 1;
             count = 0
-        elseif(buf <= lim && count < 500)
+        elseif(buf <= lim && count < 600)
             count = count + 1;
-        elseif(count >= 500)
+        elseif(count >= 600)
             if(flag == 1)
                 push!(pns, j - 400);
                 flag = 0;
@@ -153,13 +154,22 @@ for i=1:length(files)
     println(min)=#
     pns = getWordPoints(x)
     word = x[pns[1]:pns[2]]
-    word_mfcc = mfcc(x[pns[1]:pns[2]])
-    if(rewrite && length(word_mfcc[1]) <= 4096)
+    if(length(pns) != 4)
+        println(pns)
+        plot(x, "r")
+        title(files[i])
+        plt[:show]()
+        plot(word, "r")
+        title(files[i])
+        plt[:show]()
+    end
+    word_mfcc = mfcc(word)
+    if(rewrite && length(word_mfcc[1]) <= 4096 && length(pns) == 4)
         coeff = Array{Float64, 1}()
         for j in word_mfcc[1]
             append!(coeff, [n for n in j])
         end
-        write(memory, string(files[i][5:end], "/", coeff, "/", sort(word)[(end - 512 + 1):end], "/", [rand((0:1), 512)], "\n"))
+        write(memory, string(files[i][5:end], "/", coeff, "\n"))
     end
     #println(length(x[pns[1]:pns[2]]))
     #println(length(word_mfcc[1]))
