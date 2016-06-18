@@ -133,7 +133,6 @@ l1 = Layer(256, 8)
 for i=1:length(files)
 #for i=1:2
     #coordinates, fs = wavread(string(AUDIO_DIR, dir[i]), 30000);
-    println(files[i])
     x, fs = wavread(string(AUDIO_DIR, files[i], ".wav"))
     #=min = 100.0
     avr = 0.0;
@@ -155,16 +154,12 @@ for i=1:length(files)
     pns = getWordPoints(x)
     word = x[pns[1]:pns[2]]
     word_mfcc = mfcc(x[pns[1]:pns[2]])
-    if(length(word_mfcc[1]) > 4096)
-        println(files[i])
-        continue;
-    end
-    if(rewrite)
+    if(rewrite && length(word_mfcc[1]) <= 4096)
         coeff = Array{Float64, 1}()
         for j in word_mfcc[1]
             append!(coeff, [n for n in j])
         end
-        write(memory, string(files[i][5:end], "/", coeff, "/", sort(word)[(end - 512 + 1):end], "\n"))
+        write(memory, string(files[i][5:end], "/", coeff, "/", sort(word)[(end - 512 + 1):end], "/", [rand((0:1), 512)], "\n"))
     end
     #println(length(x[pns[1]:pns[2]]))
     #println(length(word_mfcc[1]))

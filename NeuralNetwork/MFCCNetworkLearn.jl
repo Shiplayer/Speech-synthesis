@@ -34,15 +34,18 @@ for l in eachline(memory)
     push!(names, line[1]);
     mfcc = line[2];
     points = line[3];
-    coeff = [parse(i) for i in split(mfcc[2:end-2], ",")]
-    points = [parse(i) for i in split(points[2:end-2], ",")]
+    numbers = split(line[4][2:end-1],",");
+    coeff = [parse(i) for i in split(mfcc[2:end-1], ",")]
+    points = [parse(i) for i in split(points[2:end-1], ",")]
+    numbers = [parse(i) for i in numbers]
     count = count + 1;
     append!(coeff, [0 for i=length(coeff)+1:4096])
     dict[line[1]] = coeff;
     dict_point[line[1]] = points;
-    dict_output_layout[line[1]] = rand((0:1), 512)
-    if(count % 100 == 0)
+    dict_output_layout[line[1]] = numbers
+    if(count % 400 == 0)
         println(count / 100)
+        break;
     end
 end
 
