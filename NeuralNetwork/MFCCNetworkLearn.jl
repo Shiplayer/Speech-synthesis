@@ -1,8 +1,10 @@
 push!(LOAD_PATH, "Neurons/")
 using MFCCLayer;
+dictionary = Array{Dict, 1}()
 dict = Dict();
 dict_point = Dict();
 dict_output_layout = Dict();
+dict_bits = Dict();
 
 rewrite = false;
 
@@ -20,43 +22,16 @@ memory = open(string(MEMORYPATH, DATA), "r")
 count = 0
 
 #l = Layer(1024, 2048, :get) # скрытый слой, который возвращает значение сигмойдной функции
-l_out = Layer(256, 4096, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
+length_layer1 = 256
+l_out = Layer(length_layer1, 4096, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
 #l2 = Layer(256, 1024, :get) # скрытый слой, который принимает бинарное представление из 512 и еще в кажждый нейрон отправляем значение амплитуд
 l2_out = Layer(256, 1024)   # отправляем значение сигмойдной функции из слоя выше и получаем бинарное представление слова
 
 names = Array{ASCIIString, 1}()
 
-for l in eachline(memory)
-    if(OS_NAME == :Windows)
-        l = chop(l)
-    end
-    l = chop(l)
-    global line = split(l, "/");
-    push!(names, line[1]);
-    mfcc = line[2];
-    points = line[3];
-    numbers = split(line[4][2:end-1],",");
-    coeff = [parse(i) for i in split(mfcc[2:end-1], ",")]
-    points = [parse(i) for i in split(points[2:end-1], ",")]
-    numbers = [parse(i) for i in numbers]
-    count = count + 1;
-    append!(coeff, [0 for i=length(coeff)+1:4096])
-    dict[line[1]] = coeff;
-    dict_point[line[1]] = points;
-    dict_output_layout[line[1]] = numbers
-    if(count % 100 == 0)
-        println(count / 100)
-        break;
-    end
-end
-
-println(length(dict));
-#pop!(names)
-println(names)
-
-function convert2bits(str::ASCIIString)
+function convert2bits(str::AbstractString)
     str = reverse(str)
-    ans = [0 for i =1:(256 - length(str) * 8)]
+    ans = [0 for i =1:(length_layer1 - length(str) * 8)]
     for i=1:length(str)
         a = bits(str[i])[end-7:end]
         buf = [Int(a[j] - '0') for j=1:length(a)]
@@ -64,6 +39,36 @@ function convert2bits(str::ASCIIString)
     end
     return reverse(ans)
 end
+
+for l in eachline(memory)
+    if(OS_NAME == :Windows)
+        l = chop(l)
+    end
+    l = chop(l)
+    global line = split(l, "/");
+    push!(dictionary, Dict())
+    #push!(names, line[1]);
+    mfcc = line[2];
+    points = line[3];
+    numbers = split(line[4][2:end-1],",");
+    coeff = [parse(i) for i in split(mfcc[2:end-1], ",")]
+    #points = [parse(i) for i in split(points[2:end-1], ",")]
+    #numbers = [parse(i) for i in numbers]
+    count = count + 1;
+    append!(coeff, [0 for i=length(coeff)+1:4096])
+    dictionary[count][:input] = line[1]
+    dictionary[count][:coeff] = coeff
+    dictionary[count][:bits] = convert2bits(line[1])
+    #dict_point[line[1]] = points;
+    #dict_output_layout[line[1]] = numbers
+    if(count % 100 == 0)
+        println(count / 100)
+    end
+end
+
+println(length(dictionary));
+#pop!(names)
+#println(dictionary)
 
 function convert2word(str::Array{Int64, 1})
     str = reverse(str)
@@ -83,17 +88,17 @@ input = "child"
 
 function check(s::Symbol)
     if(s == :two)
-        for i in keys(dict)
-            ans, _ = getAnsfromLayer(i, s)
+        for word in dictionary
+            ans, _ = getAnsfromLayer(word, s)
             ans = convert2word(ans)
-            if(i != ans)
+            if(word[:input] != ans)
                 return false;
             end
         end
         return true;
    elseif s == :one
-       for i in keys(dict)
-           ans, _ = getAnsfromLayer(i, s)
+       for word in dictionary                   # word::Dict
+           ans, _ = getAnsfromLayer(word, s)
            bin = dict_output_layout[i]
            if(bin != ans)
                return false;
@@ -127,9 +132,9 @@ function getAnsfromLayer(key, s::Symbol)
     end
 end
 
-function getAns(key)
+function getAns(word)
     #println(key, " ", length(dict[key]))
-    ans = setInputAllinAll(l_out, dict[key])
+    ans = setInputAllinAll(l_out, word[:coeff])
     #ans = convert(Array{Float64, 1}, ans)
     #append!(ans, dict_point[key])
     #ans = setInputAllinAll(l2_out, ans)
@@ -144,9 +149,9 @@ function errors(false_ans, ans)
 end
 
 function checkAns()
-    for k in keys(dict)
-        ans = getAns(k)
-        if(k != convert2word(ans))
+    for word in dictionary
+        ans = getAns(word)
+        if(word[:bits] != ans)
             return false;
         end
     end
@@ -158,24 +163,32 @@ if(isfile(string(MEMORYPATH, "width_layer1.data")) && !rewrite)
     loadWidth(l_out, string(MEMORYPATH, "width_layer1.data"))
 else
     println("lerning first layer is started")
+    count = 0;
     # обучаем первый слой
     while(!checkAns())
-        input = rand(names)
-        #ans = getAnsfromLayer(input, :one)
-        ans = getAns(input)
-        #println(length(ans), length(dict_output_layout[input]))
-        #println("false_ans: ", ans)
-        #println("ans: ", dict_output_layout[input])
-        #println("ans: ", convert2bits(input))S
-        println(errors(ans, convert2bits(input)), ", ", input, " vs ", convert2word(ans))
-        #println(convert2word(ans), " vs ", input)
-        #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
+        inputArr = rand(dictionary, Int(round(length(dictionary) / 4)))
+        count = count + 1
+        for i=1:count
+            for word in inputArr
+                #ans = getAnsfromLayer(input, :one)
+                ans = getAns(word)
+                #println(length(ans), length(dict_output_layout[input]))
+                #println("false_ans: ", ans)
+                #println("ans: ", dict_output_layout[input])
+                #println("ans: ", convert2bits(input))S
+                println(count, " эпоха, ",errors(ans, word[:bits]), ", ", word[:input], " vs ", convert2word(ans))
+                #println(convert2word(ans), " vs ", input)
+                #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
+                if(word[:bits] != ans)
+                    changeWidth(l_out, word[:coeff], word[:bits], ans)
+                end
 
-        changeWidth(l_out, dict[input], convert2bits(input), ans)
+            end
 
-        #println(dict[input])
-        #println(dict_output_layout[input])
-        #println(ans)
+            #println(dict[input])
+            #println(dict_output_layout[input])
+            #println(ans)
+        end
     end
 
 

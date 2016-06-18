@@ -97,7 +97,10 @@ using MFCCNeuron
 
     function changeWidth(l::Layer, input, output, false_output)
         for i=1:length(output)
-            changeWidthNeuron(l.neurons[i], input, output[i], false_output[i])
+
+            if(output != false_output)
+                changeWidthNeuron(l.neurons[i], input, output[i], false_output[i])
+            end
         end
     end
 
