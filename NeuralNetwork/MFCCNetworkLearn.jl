@@ -49,8 +49,8 @@ for l in eachline(memory)
     push!(dictionary, Dict())
     #push!(names, line[1]);
     mfcc = line[2];
-    points = line[3];
-    numbers = split(line[4][2:end-1],",");
+    #points = line[3];
+    #numbers = split(line[4][2:end-1],",");
     coeff = [parse(i) for i in split(mfcc[2:end-1], ",")]
     #points = [parse(i) for i in split(points[2:end-1], ",")]
     #numbers = [parse(i) for i in numbers]
@@ -168,7 +168,7 @@ else
     count = 0;
     # обучаем первый слой
     while(!checkAns())
-        inputArr = rand(dictionary, Int(round(length(dictionary) / 4)))
+        inputArr = rand(dictionary, Int(round(length(dictionary) / 2)))
         count = count + 1
         for i=1:count
             for word in inputArr
