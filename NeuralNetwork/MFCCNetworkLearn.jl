@@ -66,6 +66,8 @@ for l in eachline(memory)
     end
 end
 
+close(memory)
+
 println(length(dictionary));
 #pop!(names)
 #println(dictionary)
