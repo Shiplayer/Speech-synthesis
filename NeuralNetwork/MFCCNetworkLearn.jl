@@ -20,7 +20,7 @@ memory = open(string(MEMORYPATH, DATA), "r")
 count = 0
 
 #l = Layer(1024, 2048, :get) # скрытый слой, который возвращает значение сигмойдной функции
-l_out = Layer(512, 4096, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
+l_out = Layer(256, 4096, :just, 0.75)    # отправляем в слой значение сигмойдной функции и получаем бинарное представление
 #l2 = Layer(256, 1024, :get) # скрытый слой, который принимает бинарное представление из 512 и еще в кажждый нейрон отправляем значение амплитуд
 l2_out = Layer(256, 1024)   # отправляем значение сигмойдной функции из слоя выше и получаем бинарное представление слова
 
@@ -30,6 +30,7 @@ for l in eachline(memory)
     if(OS_NAME == :Windows)
         l = chop(l)
     end
+    l = chop(l)
     global line = split(l, "/");
     push!(names, line[1]);
     mfcc = line[2];
@@ -43,7 +44,7 @@ for l in eachline(memory)
     dict[line[1]] = coeff;
     dict_point[line[1]] = points;
     dict_output_layout[line[1]] = numbers
-    if(count % 400 == 0)
+    if(count % 100 == 0)
         println(count / 100)
         break;
     end
@@ -145,7 +146,7 @@ end
 function checkAns()
     for k in keys(dict)
         ans = getAns(k)
-        if(dict_output_layout[k] != ans)
+        if(k != convert2word(ans))
             return false;
         end
     end
@@ -165,12 +166,12 @@ else
         #println(length(ans), length(dict_output_layout[input]))
         #println("false_ans: ", ans)
         #println("ans: ", dict_output_layout[input])
-        #println("ans: ", convert2bits(input))
-        println(errors(ans, dict_output_layout[input]))
+        #println("ans: ", convert2bits(input))S
+        println(errors(ans, convert2bits(input)), ", ", input, " vs ", convert2word(ans))
         #println(convert2word(ans), " vs ", input)
         #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
 
-        changeWidth(l_out, dict[input], dict_output_layout[input], ans)
+        changeWidth(l_out, dict[input], convert2bits(input), ans)
 
         #println(dict[input])
         #println(dict_output_layout[input])
@@ -185,12 +186,12 @@ end
 
 function getAnsLayer(key)
     ans = setInputAllinAll(l_out, dict[key])
-    ans = convert(Array{Float64, 1}, ans)
-    append!(ans, dict_point[key])
+    #ans = convert(Array{Float64, 1}, ans)
+    #append!(ans, dict_point[key])
     println(length(ans))
-    input_new = ans
-    ans = setInputAllinAll(l2_out, ans)
-    return ans, input_new;
+    #input_new = ans
+    #ans = setInputAllinAll(l2_out, ans)
+    return ans;
 end
 
 function checkAnsLayer2()
@@ -207,7 +208,7 @@ function checkAnsLayer2()
     return true;
 end
 
-
+#=
 if(isfile(string(MEMORYPATH, "width_layer2.data")) && !rewrite)
     println("loading width")
     loadWidth(l2_out, string(MEMORYPATH, "width_layer2.data"))
@@ -222,6 +223,7 @@ else
     saveWidth(l2_out, string(MEMORYPATH, "width_layer2.data"))
     println("learned and saved")
 end
+=#
 #=count_2 = 0
 while(true)
     count_2 = count_2 + 1
