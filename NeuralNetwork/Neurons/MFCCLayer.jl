@@ -22,6 +22,7 @@ using MFCCNeuron
     end
 
     function loadWidth(l::Layer, path::ASCIIString)
+        println("Loading width for layer")
         fileWithWidth = open(path, "r")
         countLine = 0;
         for f in eachline(fileWithWidth)
@@ -35,14 +36,27 @@ using MFCCNeuron
             l.neurons[countLine].width = [parse(i) for i in split(w, ",")]
         end
         close(fileWithWidth)
+        println("Width for layer loaded")
     end
 
-    function saveWidth(l::Layer, path::ASCIIString)
-        fileWithWidth = open(path, "w")
+    function saveWidth(l::Layer, path::ASCIIString, file::ASCIIString)
+        backup = false
+        if(isfile(string(path, file)))
+            println("Backup widths")
+            mv(string(path, file), string(path, ".", file, ".backup"))
+            backup = true
+        end
+        println("Saving width for layer")
+        fileWithWidth = open(string(path, file), "w")
         for n in l.neurons
             write(fileWithWidth, string(n.width), "\n")
         end
         close(fileWithWidth)
+        println("Saved width for layer")
+        if(backup)
+            rm(string(path, ".", file, ".backup"))
+            println("backup file deleted")
+        end
     end
 
     function showWidth(l::Layer)

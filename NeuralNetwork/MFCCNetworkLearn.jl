@@ -16,6 +16,7 @@ end
 
 
 MEMORYPATH = "Memory/"
+WIDTHFILE = "width2.txt"
 DATA = "Str2MFCC.txt"
 memory = open(string(MEMORYPATH, DATA), "r")
 
@@ -61,8 +62,9 @@ for l in eachline(memory)
     dictionary[count][:bits] = convert2bits(line[1])
     #dict_point[line[1]] = points;
     #dict_output_layout[line[1]] = numbers
-    if(count % 100 == 0)
+    if(count % 400 == 0)
         println(count / 100)
+        break;
     end
 end
 
@@ -160,17 +162,24 @@ function checkAns()
     println("CHECK SUCCESSFUL!!!!")
     return true;
 end
-
-if(isfile(string(MEMORYPATH, "width_layer1.data")) && !rewrite)
-    loadWidth(l_out, string(MEMORYPATH, "width_layer1.data"))
+# "width_layer1.data"
+if(isfile(string(MEMORYPATH, WIDTHFILE)) && !rewrite)
+    loadWidth(l_out, string(MEMORYPATH, WIDTHFILE))
 else
+    if(isfile(string(MEMORYPATH, WIDTHFILE)))
+        loadWidth(l_out, string(MEMORYPATH, WIDTHFILE))
+    end
     println("lerning first layer is started")
     count = 0;
+    countErrors = 0;
+    err = 0
     # обучаем первый слой
     while(!checkAns())
-        inputArr = rand(dictionary, Int(round(length(dictionary) / 2)))
+        inputArr = rand(dictionary, Int(round(length(dictionary) * 3 / 4)))
         count = count + 1
+        err = 0
         for i=1:count
+            flag = true
             for word in inputArr
                 #ans = getAnsfromLayer(input, :one)
                 ans = getAns(word)
@@ -178,23 +187,27 @@ else
                 #println("false_ans: ", ans)
                 #println("ans: ", dict_output_layout[input])
                 #println("ans: ", convert2bits(input))S
-                println(count, " эпоха, ",errors(ans, word[:bits]), ", ", word[:input], " vs ", convert2word(ans))
+                showErr = errors(ans, word[:bits])
+                err = err + showErr
+                println(count, " эпоха, ", showErr, "(", countErrors, "), ", word[:input], " vs ", convert2word(ans))
                 #println(convert2word(ans), " vs ", input)
                 #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
                 if(word[:bits] != ans)
+                    flag = false
                     changeWidth(l_out, word[:coeff], word[:bits], ans)
                 end
-
             end
-
+            if(flag)
+                break;
+            end
             #println(dict[input])
             #println(dict_output_layout[input])
             #println(ans)
         end
+        countErrors = err / length(inputArr)
+        saveWidth(l_out, MEMORYPATH, WIDTHFILE)
     end
 
-
-    saveWidth(l_out, string(MEMORYPATH, "width_layer1.data"))
     println("layout1 is learned and saved")
 
 end
@@ -235,7 +248,7 @@ else
         changeWidth(l2_out, input_new, convert2bits(input), ans)
     end
 
-    saveWidth(l2_out, string(MEMORYPATH, "width_layer2.data"))
+    saveWidth(l2_out, MEMORYPATH, "width_layer2.data")
     println("learned and saved")
 end
 =#
@@ -270,11 +283,7 @@ while(true)
         break;
     else
         input = cmd;
-        if(get(dict, input, -1) == -1)
-            println("i dont know this word")
-            continue;
-        end
-        ans = getAnsLayer(input)
+        ans = getAns(input)
         ans = convert2word(ans)
         println(ans)
         if(length(ans) > 0)
