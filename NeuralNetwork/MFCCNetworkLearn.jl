@@ -197,7 +197,7 @@ else
     while(!checkAns())
         if(countErrors >= 1)
             inputArr = rand(dictionary, Int(round(length(dictionary) * 3 / 4)))
-            countErrors = 0
+            #countErrors = 0
         else
             println("full dictionary")
             inputArr = dictionary
