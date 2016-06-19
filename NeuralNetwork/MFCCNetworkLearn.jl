@@ -1,5 +1,7 @@
 push!(LOAD_PATH, "Neurons/")
 using MFCCLayer;
+include("MFCCNetwork.jl")
+
 dictionary = Array{Dict, 1}()
 dict = Dict();
 dict_point = Dict();
@@ -8,17 +10,32 @@ dict_bits = Dict();
 
 rewrite = false;
 
+MEMORYDIR = "Memory/"
+WIDTHFILE = "width.txt"
+WIDTHFILELOAD = WIDTHFILE
+DATA = "Str2MFCC.txt"
+EXAMPLESDIR = "../Examples/"
+NUMBERWORDS = -1
+
 for k in ARGS
+    if(contains(k, "="))
+        m = match(r"(?P<c>[-]{1,2}\w*)[=](?P<w>\w.*)", k)
+        if(m[:c] == "--out")
+            WIDTHFILE = convert(ASCIIString, m[:w])
+        end
+        if(m[:c] == "--load")
+            WIDTHFILELOAD = convert(ASCIIString, m[:w])
+        end
+        if(m[:c] == "--words")
+            NUMBERWORDS = Int(floor(parse(m[:w])))
+        end
+    end
     if(k == "-r")
         rewrite = true;
     end
 end
 
-
-MEMORYPATH = "Memory/"
-WIDTHFILE = "width2.txt"
-DATA = "Str2MFCC.txt"
-memory = open(string(MEMORYPATH, DATA), "r")
+memory = open(string(MEMORYDIR, DATA), "r")
 
 count = 0
 
@@ -60,10 +77,13 @@ for l in eachline(memory)
     dictionary[count][:input] = line[1]
     dictionary[count][:coeff] = coeff
     dictionary[count][:bits] = convert2bits(line[1])
+    dictionary[count][:count] = count
     #dict_point[line[1]] = points;
     #dict_output_layout[line[1]] = numbers
-    if(count % 400 == 0)
+    if(count % 100 == 0)
         println(count / 100)
+    end
+    if(count == NUMBERWORDS)
         break;
     end
 end
@@ -163,24 +183,31 @@ function checkAns()
     return true;
 end
 # "width_layer1.data"
-if(isfile(string(MEMORYPATH, WIDTHFILE)) && !rewrite)
-    loadWidth(l_out, string(MEMORYPATH, WIDTHFILE))
+if(isfile(string(MEMORYDIR, WIDTHFILELOAD)) && !rewrite)
+    loadWidth(l_out, string(MEMORYDIR, WIDTHFILELOAD))
 else
-    if(isfile(string(MEMORYPATH, WIDTHFILE)))
-        loadWidth(l_out, string(MEMORYPATH, WIDTHFILE))
+    if(isfile(string(MEMORYDIR, WIDTHFILELOAD)))
+        loadWidth(l_out, string(MEMORYDIR, WIDTHFILELOAD))
     end
     println("lerning first layer is started")
     count = 0;
-    countErrors = 0;
+    countErrors = 1;
     err = 0
     # обучаем первый слой
     while(!checkAns())
-        inputArr = rand(dictionary, Int(round(length(dictionary) * 3 / 4)))
+        if(countErrors >= 1)
+            inputArr = rand(dictionary, Int(round(length(dictionary) * 3 / 4)))
+            countErrors = 0
+        else
+            println("full dictionary")
+            inputArr = dictionary
+        end
         count = count + 1
         err = 0
         for i=1:count
             flag = true
-            for word in inputArr
+            for i=1:length(inputArr)
+                word = inputArr[i]
                 #ans = getAnsfromLayer(input, :one)
                 ans = getAns(word)
                 #println(length(ans), length(dict_output_layout[input]))
@@ -188,16 +215,19 @@ else
                 #println("ans: ", dict_output_layout[input])
                 #println("ans: ", convert2bits(input))S
                 showErr = errors(ans, word[:bits])
+                info = string(count, " эпоха, ", showErr, "(", countErrors, ")")
                 err = err + showErr
-                println(count, " эпоха, ", showErr, "(", countErrors, "), ", word[:input], " vs ", convert2word(ans))
+                println(info, ", pos: ", word[:count], ",\t", word[:input], " vs ", convert2word(ans))
                 #println(convert2word(ans), " vs ", input)
                 #changeWidthLayers(l, l2, new_input, convert2bits(input), ans)
                 if(word[:bits] != ans)
                     flag = false
                     changeWidth(l_out, word[:coeff], word[:bits], ans)
                 end
+
             end
             if(flag)
+                println("clear")
                 break;
             end
             #println(dict[input])
@@ -205,7 +235,7 @@ else
             #println(ans)
         end
         countErrors = err / length(inputArr)
-        saveWidth(l_out, MEMORYPATH, WIDTHFILE)
+        saveWidth(l_out, MEMORYDIR, WIDTHFILE)
     end
 
     println("layout1 is learned and saved")
@@ -237,9 +267,9 @@ function checkAnsLayer2()
 end
 
 #=
-if(isfile(string(MEMORYPATH, "width_layer2.data")) && !rewrite)
+if(isfile(string(MEMORYDIR, "width_layer2.data")) && !rewrite)
     println("loading width")
-    loadWidth(l2_out, string(MEMORYPATH, "width_layer2.data"))
+    loadWidth(l2_out, string(MEMORYDIR, "width_layer2.data"))
 else
     while(!checkAnsLayer2())
         input = rand(names)
@@ -248,7 +278,7 @@ else
         changeWidth(l2_out, input_new, convert2bits(input), ans)
     end
 
-    saveWidth(l2_out, MEMORYPATH, "width_layer2.data")
+    saveWidth(l2_out, MEMORYDIR, "width_layer2.data")
     println("learned and saved")
 end
 =#
@@ -273,7 +303,7 @@ end
 =#
 
 while(true)
-    println("next command:")
+    println("enter your command or word(see in Examples dir):")
     cmd = readline();
     if(OS_NAME == :Windows)
         cmd = chop(cmd)
@@ -283,7 +313,11 @@ while(true)
         break;
     else
         input = cmd;
-        ans = getAns(input)
+        mfcc = word2MFCC(EXAMPLESDIR,input)
+        if(typeof(mfcc) == Int)
+            println("An error has occurred. Code error: ", mfcc)
+        end
+        ans = getAns(mfcc)
         ans = convert2word(ans)
         println(ans)
         if(length(ans) > 0)

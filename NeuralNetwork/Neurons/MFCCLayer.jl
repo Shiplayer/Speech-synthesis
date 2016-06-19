@@ -25,6 +25,7 @@ using MFCCNeuron
         println("Loading width for layer")
         fileWithWidth = open(path, "r")
         countLine = 0;
+        lines =
         for f in eachline(fileWithWidth)
             countLine = countLine + 1
             println(countLine)
