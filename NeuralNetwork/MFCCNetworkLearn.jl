@@ -9,6 +9,7 @@ dict_output_layout = Dict();
 dict_bits = Dict();
 
 rewrite = false;
+testing = false;
 
 MEMORYDIR = "Memory/"
 WIDTHFILE = "width.txt"
@@ -22,6 +23,7 @@ for k in ARGS
         m = match(r"(?P<c>[-]{1,2}\w*)[=](?P<w>\w.*)", k)
         if(m[:c] == "--out")
             WIDTHFILE = convert(ASCIIString, m[:w])
+            WIDTHFILELOAD = WIDTHFILE
         end
         if(m[:c] == "--load")
             WIDTHFILELOAD = convert(ASCIIString, m[:w])
@@ -33,11 +35,10 @@ for k in ARGS
     if(k == "-r")
         rewrite = true;
     end
+    if(k == "--test" || k == "-t")
+        testing = true;
+    end
 end
-
-memory = open(string(MEMORYDIR, DATA), "r")
-
-count = 0
 
 #l = Layer(1024, 2048, :get) # скрытый слой, который возвращает значение сигмойдной функции
 length_layer1 = 256
@@ -58,39 +59,45 @@ function convert2bits(str::AbstractString)
     return reverse(ans)
 end
 
-for l in eachline(memory)
-    if(OS_NAME == :Windows)
+if(!testing)
+
+    memory = open(string(MEMORYDIR, DATA), "r")
+
+    count = 0
+    for l in eachline(memory)
+        if(OS_NAME == :Windows)
+            l = chop(l)
+        end
         l = chop(l)
+        global line = split(l, "/");
+        push!(dictionary, Dict())
+        #push!(names, line[1]);
+        mfcc = line[2];
+        #points = line[3];
+        #numbers = split(line[4][2:end-1],",");
+        coeff = [parse(i) for i in split(mfcc[2:end-1], ",")]
+        #points = [parse(i) for i in split(points[2:end-1], ",")]
+        #numbers = [parse(i) for i in numbers]
+        count = count + 1;
+        append!(coeff, [0 for i=length(coeff)+1:4096])
+        dictionary[count][:input] = line[1]
+        dictionary[count][:coeff] = coeff
+        dictionary[count][:bits] = convert2bits(line[1])
+        dictionary[count][:count] = count
+        #dict_point[line[1]] = points;
+        #dict_output_layout[line[1]] = numbers
+        if(count % 100 == 0)
+            println(count / 100)
+        end
+        if(count == NUMBERWORDS)
+            break;
+        end
     end
-    l = chop(l)
-    global line = split(l, "/");
-    push!(dictionary, Dict())
-    #push!(names, line[1]);
-    mfcc = line[2];
-    #points = line[3];
-    #numbers = split(line[4][2:end-1],",");
-    coeff = [parse(i) for i in split(mfcc[2:end-1], ",")]
-    #points = [parse(i) for i in split(points[2:end-1], ",")]
-    #numbers = [parse(i) for i in numbers]
-    count = count + 1;
-    append!(coeff, [0 for i=length(coeff)+1:4096])
-    dictionary[count][:input] = line[1]
-    dictionary[count][:coeff] = coeff
-    dictionary[count][:bits] = convert2bits(line[1])
-    dictionary[count][:count] = count
-    #dict_point[line[1]] = points;
-    #dict_output_layout[line[1]] = numbers
-    if(count % 100 == 0)
-        println(count / 100)
-    end
-    if(count == NUMBERWORDS)
-        break;
-    end
+
+    close(memory)
+
+    println(length(dictionary));
 end
-
-close(memory)
-
-println(length(dictionary));
 #pop!(names)
 #println(dictionary)
 
@@ -156,9 +163,14 @@ function getAnsfromLayer(key, s::Symbol)
     end
 end
 
-function getAns(word)
+function getAns(word, s::Symbol = :word)
     #println(key, " ", length(dict[key]))
-    ans = setInputAllinAll(l_out, word[:coeff])
+    if(s == :word)
+        ans = setInputAllinAll(l_out, word[:coeff])
+    else
+        ans = setInputAllinAll(l_out, word)
+    end
+    return ans
     #ans = convert(Array{Float64, 1}, ans)
     #append!(ans, dict_point[key])
     #ans = setInputAllinAll(l2_out, ans)
@@ -204,18 +216,18 @@ else
         end
         count = count + 1
         err = 0
-        for i=1:count
+        for j=1:count
             flag = true
             for i=1:length(inputArr)
                 word = inputArr[i]
                 #ans = getAnsfromLayer(input, :one)
-                ans = getAns(word)
                 #println(length(ans), length(dict_output_layout[input]))
                 #println("false_ans: ", ans)
                 #println("ans: ", dict_output_layout[input])
-                #println("ans: ", convert2bits(input))S
+                #println("ans: ", convert2bits(input))
+                ans = getAns(word)
                 showErr = errors(ans, word[:bits])
-                info = string(count, " эпоха, ", showErr, "(", countErrors, ")")
+                info = string(count, " эпоха(", j, " / ", i ,"), ", showErr, "(", countErrors, ")")
                 err = err + showErr
                 println(info, ", pos: ", word[:count], ",\t", word[:input], " vs ", convert2word(ans))
                 #println(convert2word(ans), " vs ", input)
@@ -224,6 +236,7 @@ else
                     flag = false
                     changeWidth(l_out, word[:coeff], word[:bits], ans)
                 end
+
 
             end
             if(flag)
@@ -316,8 +329,9 @@ while(true)
         mfcc = word2MFCC(EXAMPLESDIR,input)
         if(typeof(mfcc) == Int)
             println("An error has occurred. Code error: ", mfcc)
+            continue;
         end
-        ans = getAns(mfcc)
+        ans = getAns(mfcc, :coeff)
         ans = convert2word(ans)
         println(ans)
         if(length(ans) > 0)

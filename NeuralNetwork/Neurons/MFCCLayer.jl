@@ -25,15 +25,16 @@ using MFCCNeuron
         println("Loading width for layer")
         fileWithWidth = open(path, "r")
         countLine = 0;
-        #lines =
-        for f in eachline(fileWithWidth)
+        lines = split(readall(fileWithWidth),"\n")
+        pop!(lines)
+        for f in lines
             countLine = countLine + 1
             println(countLine)
             if(OS_NAME == :Windows)
                 f = chop(f)
             end
             index = searchindex(f, '[') + 1
-            w = f[index:end-2]
+            w = f[index:end-1]
             l.neurons[countLine].width = [parse(i) for i in split(w, ",")]
         end
         close(fileWithWidth)

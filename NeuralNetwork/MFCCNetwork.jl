@@ -39,10 +39,13 @@ function getMFCC(file)
         return -1
     end
     word = x[pns[1]:pns[2]]
-    coeff = mfcc(word)
-    if(coeff <= 4096)
+    coeff = mfcc(word)[1]
+    if(length(coeff) > 4096)
+        println(length(coeff))
         return -2
     end
+    coeff = vec(coeff)
+    append!(coeff, [0 for i=length(coeff)+1:4096])
     return coeff;
 end
 
