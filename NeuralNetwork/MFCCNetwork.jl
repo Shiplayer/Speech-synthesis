@@ -32,30 +32,38 @@ function getWordPoints(x::Array{Float64, 2})
     return pns
 end
 
-function getMFCC(file)
+function getMFCC(file::ASCIIString)
     x, fs = wavread(file)
+    return getMFCC(x)
+end
+
+function getMFCC(x::Array{Float64, 2})
     pns = getWordPoints(x)
-    if(length(pns) != 4)
+    if(length(pns) == 1)
+        push!(pns, length(x))
+    elseif(length(pns) == 2 || length(pns) == 4)
+        word = x[pns[1]:pns[2]]
+        coeff = mfcc(word)[1]
+        if(length(coeff) > 4096)
+            println(length(coeff))
+            return -2
+        end
+        coeff = vec(coeff)
+        append!(coeff, [0 for i=length(coeff)+1:4096])
+        return coeff;
+    else
+        println(length(pns))
         return -1
     end
-    word = x[pns[1]:pns[2]]
-    coeff = mfcc(word)[1]
-    if(length(coeff) > 4096)
-        println(length(coeff))
-        return -2
-    end
-    coeff = vec(coeff)
-    append!(coeff, [0 for i=length(coeff)+1:4096])
-    return coeff;
 end
 
 function word2MFCC(pathDir::ASCIIString, word)
     exampleDir = readdir(pathDir)
     for f in exampleDir
-        file = string(AUDIO_DIR,f)
+        file = string(pathDir, f)
         if(isfile(file) && contains(f, ".wav"))
-            name = f[5:end-4]
-            if(name == word)
+            name = f;
+            if(contains(name, word))
                 return getMFCC(file)
             end
         end
