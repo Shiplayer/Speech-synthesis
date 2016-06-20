@@ -41,7 +41,9 @@ function getMFCC(x::Array{Float64, 2})
     pns = getWordPoints(x)
     if(length(pns) == 1)
         push!(pns, length(x))
-    elseif(length(pns) == 2 || length(pns) == 4)
+    end
+    
+    if(length(pns) == 2 || length(pns) == 4)
         word = x[pns[1]:pns[2]]
         coeff = mfcc(word)[1]
         if(length(coeff) > 4096)
