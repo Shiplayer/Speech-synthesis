@@ -24,18 +24,16 @@ for k in ARGS
         if(m[:c] == "--out")
             WIDTHFILE = convert(ASCIIString, m[:w])
             WIDTHFILELOAD = WIDTHFILE
-        end
-        if(m[:c] == "--load")
+        elseif(m[:c] == "--load")
             WIDTHFILELOAD = convert(ASCIIString, m[:w])
-        end
-        if(m[:c] == "--words")
+        elseif(m[:c] == "--words")
             NUMBERWORDS = Int(floor(parse(m[:w])))
+        elseif(m[:c] == "--data")
+            DATA = convert(ASCIIString, m[:w])
         end
-    end
-    if(k == "-r")
+    elseif(k == "-r")
         rewrite = true;
-    end
-    if(k == "--test" || k == "-t")
+    elseif(k == "--test" || k == "-t")
         testing = true;
     end
 end
